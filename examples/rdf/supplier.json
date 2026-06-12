@@ -1,0 +1,144 @@
+{
+    "tableName": "core.supplier",
+    "primaryKey": "supplier_id",
+    "fieldName": [
+        "supplier_id",
+        "supplier_code",
+        "supplier_name",
+        "email",
+        "phone",
+        "website",
+        "tax_id",
+        "address",
+        "status",
+        "credit_limit",
+        "is_active"
+    ],
+    "fieldValidation": [
+        {
+            "name": "supplier_id",
+            "type": "uuid",
+            "constraints": {
+                "primaryKey": true,
+                "autoGenerate": true
+            }
+        },
+        {
+            "name": "supplier_code",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "minLength": 3,
+                "maxLength": 20,
+                "unique": true,
+                "uppercase": true,
+                "trim": true,
+                "pattern": "^[A-Z]{3}\\d{3,}$",
+                "patternMessage": "Format kode supplier: 3 huruf kapital diikuti minimum 3 digit (contoh: SUP001)"
+            }
+        },
+        {
+            "name": "supplier_name",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "minLength": 2,
+                "maxLength": 100,
+                "trim": true
+            }
+        },
+        {
+            "name": "email",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "format": "email",
+                "formatMessage": "Format email tidak valid",
+                "maxLength": 100,
+                "lowercase": true,
+                "trim": true
+            }
+        },
+        {
+            "name": "phone",
+            "type": "string",
+            "constraints": {
+                "format": "phone",
+                "maxLength": 20,
+                "trim": true
+            }
+        },
+        {
+            "name": "website",
+            "type": "string",
+            "constraints": {
+                "format": "url",
+                "formatMessage": "URL harus diawali http:// atau https://",
+                "maxLength": 200
+            }
+        },
+        {
+            "name": "tax_id",
+            "type": "string",
+            "constraints": {
+                "maxLength": 30,
+                "trim": true
+            }
+        },
+        {
+            "name": "address",
+            "type": "string",
+            "constraints": {
+                "maxLength": 500,
+                "trim": true
+            }
+        },
+        {
+            "name": "status",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "enum": ["active", "inactive", "blacklisted"],
+                "enumMessage": "Status hanya boleh: active, inactive, atau blacklisted",
+                "default": "active",
+                "lowercase": true
+            }
+        },
+        {
+            "name": "credit_limit",
+            "type": "decimal",
+            "constraints": {
+                "min": 0,
+                "max": 9999999999.99,
+                "precision": 12,
+                "scale": 2,
+                "default": 0
+            }
+        },
+        {
+            "name": "is_active",
+            "type": "boolean",
+            "constraints": {
+                "default": true
+            }
+        }
+    ],
+    "fieldNameLookup": {
+        "id": "supplier_id",
+        "text": "supplier_name"
+    },
+    "defaultScope": {
+        "lookup": { "is_active": true },
+        "read": { "is_active": true }
+    },
+    "action": {
+        "datatables": true,
+        "create": true,
+        "update": true,
+        "delete": true,
+        "first": true,
+        "lookup": true,
+        "read": true,
+        "export": true
+    }
+}
