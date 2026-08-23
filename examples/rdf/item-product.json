@@ -1,0 +1,115 @@
+{
+    "tableName": "inventory.item_product",
+    "primaryKey": "item_product_id",
+    "fieldName": [
+        "item_product_id",
+        "category_id",
+        "item_code",
+        "item_name",
+        "unit_id",
+        "unit_price",
+        "stock_qty",
+        "reorder_level",
+        "is_active"
+    ],
+    "fieldValidation": [
+        {
+            "name": "item_product_id",
+            "type": "uuid",
+            "constraints": {
+                "primaryKey": true,
+                "autoGenerate": true
+            }
+        },
+        {
+            "name": "category_id",
+            "type": "uuid",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "item_code",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "pattern": "^ITM\\d{6}$",
+                "patternMessage": "Format kode item: ITM + 6 digit (contoh: ITM000001)",
+                "unique": true,
+                "uppercase": true,
+                "trim": true
+            }
+        },
+        {
+            "name": "item_name",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "minLength": 2,
+                "maxLength": 200,
+                "trim": true
+            }
+        },
+        {
+            "name": "unit_id",
+            "type": "uuid",
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "name": "unit_price",
+            "type": "decimal",
+            "constraints": {
+                "required": true,
+                "min": 0,
+                "precision": 14,
+                "scale": 2,
+                "minMessage": "Harga satuan tidak boleh negatif"
+            }
+        },
+        {
+            "name": "stock_qty",
+            "type": "integer",
+            "constraints": {
+                "min": 0,
+                "default": 0
+            }
+        },
+        {
+            "name": "reorder_level",
+            "type": "integer",
+            "constraints": {
+                "min": 0,
+                "default": 0
+            }
+        },
+        {
+            "name": "is_active",
+            "type": "boolean",
+            "constraints": {
+                "default": true
+            }
+        }
+    ],
+    "fieldNameLookup": {
+        "id": "item_product_id",
+        "text": "item_code||' - '||item_name as display_text"
+    },
+    "datatablesQuery": "file:query/item-product-datatables.sql",
+    "datatablesWhere": ["item_code", "item_name", "all"],
+    "defaultScope": {
+        "lookup": { "is_active": true },
+        "read": { "is_active": true }
+    },
+    "action": {
+        "datatables": true,
+        "create": true,
+        "update": true,
+        "delete": true,
+        "first": true,
+        "lookup": true,
+        "read": true,
+        "export": true
+    }
+}
