@@ -10,7 +10,7 @@
 | **URL** | `/api/{project}/{endpoint}/lookup` |
 | **Content-Type** | `application/json` (POST) |
 | **HTTP Status Sukses** | `200 OK` |
-| **Database** | PostgreSQL, MySQL, Oracle |
+| **Database** | PostgreSQL, MySQL, SQLite, Oracle |
 | **Header Wajib** | `X-Request-Mode: dynamic` (GET) atau `X-Request-Mode: static` (POST) |
 | **Format Data** | `{ id, text }`, atau `{ id, text, row }` saat request menyertakan `select` (`id`/`text` configurable via `fieldNameLookup`) |
 | **Default Scope** | Diterapkan (hanya data aktif jika dikonfigurasi) |
@@ -52,7 +52,7 @@ Parameter dikirim via query string:
 | Parameter | Tipe | Wajib | Default | Batasan | Keterangan |
 |-----------|------|:-----:|---------|---------|------------|
 | `search` | string | Tidak | `""` | Maks 100 karakter | Kata kunci pencarian (case-insensitive) |
-| `select` | string (JSON array) | Tidak | — | Harus berupa string hasil `JSON.stringify` dari array, mis. `["supplier_id","supplier_name","credit_limit"]` di-encode jadi `%5B%22supplier_id%22%2C%22supplier_name%22%2C%22credit_limit%22%5D` | Kolom tambahan yang ikut diminta ke lookup. Bila diisi, tiap item response mendapat `row` — lihat [Kolom `row`](#kolom-row) |
+| `select` | string (JSON array) | Tidak | — | Harus berupa string hasil `JSON.stringify` dari array, mis. `["supplier_id","supplier_name","credit_limit"]` di-encode jadi `%5B%22supplier_id%22%2C%22supplier_name%22%2C%22credit_limit%22%5D` | Kolom tambahan yang ikut diminta ke lookup. Bila diisi, tiap item response mendapat `row` (lihat [Kolom `row`](#kolom-row)). Isinya divalidasi dengan [Aturan Kolom `select`](#aturan-kolom-select) |
 | `company_id` | string | Tidak | — | — | Filter tambahan (contoh; parameter extra bisa bervariasi per endpoint) |
 
 ### Contoh Request
@@ -146,6 +146,10 @@ bukan array:
 }
 ```
 
+#### 400 — Field Select Tidak Valid (GET)
+
+Muncul bila isi `select` melanggar [Aturan Kolom `select`](#aturan-kolom-select). Bentuk response sama dengan [400 — Field Select Tidak Valid](#400--field-select-tidak-valid) pada POST.
+
 #### 400 — Parameter Search Terlalu Panjang
 
 ```json
@@ -198,7 +202,7 @@ Endpoint POST memiliki tiga mode berdasarkan isi request body:
 | Parameter | Tipe | Wajib | Keterangan |
 |-----------|------|:-----:|------------|
 | `where` | array / object | **Ya** (untuk mode ini) | Kondisi filter. Key harus ada di `readableFields`; kolom tidak dikenal ditolak 400 (fail-closed). Lihat [Format WHERE](README.md#format-where-clause) |
-| `select` | array | Tidak | Kolom yang ditampilkan. Field biasa divalidasi terhadap `readableFields`. Mendukung SQL expression (`\|\|`, `AS`, `CONCAT`) tanpa validasi |
+| `select` | array | Tidak | Kolom yang ditampilkan. Berisi nama kolom atau ekspresi ber-alias, lihat [Aturan Kolom `select`](#aturan-kolom-select) |
 | `sort_columns` | array | Tidak | Pengurutan data. Lihat [Format Sort Columns](README.md#format-sort-columns) |
 
 #### Contoh Request
@@ -214,7 +218,7 @@ Endpoint POST memiliki tiga mode berdasarkan isi request body:
 }
 ```
 
-**2. Dengan kolom custom (SQL expression):**
+**2. Dengan kolom custom (ekspresi ber-alias):**
 ```json
 {
   "where": [
@@ -404,20 +408,19 @@ Response ini juga menyertakan contoh format request yang benar:
 
 #### 400 — Field Select Tidak Valid
 
+Muncul bila isi `select` melanggar [Aturan Kolom `select`](#aturan-kolom-select). Pesan `message` menyebut setiap entri `select` yang ditolak, ditulis apa adanya.
+
 ```json
 {
   "success": false,
   "error": "Invalid select fields",
-  "message": "Invalid field(s): field_tidak_ada",
+  "message": "Invalid field(s): internal_note, bank_account AS rek",
   "validFields": ["supplier_id", "supplier_code", "supplier_name", "email"],
-  "sqlExpressionNote": "SQL expressions dengan operator || atau AS alias diperbolehkan",
   "timestamp": "2026-03-30T10:30:00.000Z"
 }
 ```
 
 > **Catatan:** Field `validFields` dalam respons error hanya disertakan saat `NODE_ENV=development`. Di produksi, field ini tidak ditampilkan (anti-disclosure).
-
-> Validasi select memiliki **pengecualian**. Field yang mengandung SQL expression (`||`, `CONCAT`, `COALESCE`, `CASE`, `WHEN`) atau alias (`AS`) **tidak divalidasi** terhadap `readableFields`.
 
 #### 500 — Internal Server Error
 
@@ -430,6 +433,39 @@ Response ini juga menyertakan contoh format request yang benar:
   "timestamp": "2026-03-30T10:30:00.000Z"
 }
 ```
+
+---
+
+## Aturan Kolom `select`
+
+Parameter `select` pada GET dan POST divalidasi dengan aturan yang sama di PostgreSQL, MySQL, SQLite, dan Oracle. Validasi berjalan sebelum query dijalankan dan sebelum cache dibaca, sehingga kolom yang tidak dideklarasikan di payload tidak pernah terkirim ke klien. Setiap entri `select` harus berbentuk salah satu dari dua pola berikut.
+
+| Bentuk | Aturan | Contoh |
+|--------|--------|--------|
+| Nama kolom | Terdaftar di `readableFields` atau sama dengan primary key | `"supplier_name"` |
+| Ekspresi ber-alias | Ditulis `<ekspresi> AS <alias>`, dan setiap kolom di dalam ekspresi terdaftar di `readableFields` | `"supplier_code\|\|' - '\|\|supplier_name AS display_text"` |
+
+Ekspresi hanya boleh tersusun dari unsur berikut:
+
+- Nama kolom yang terdaftar di `readableFields`.
+- Literal string dalam tanda kutip tunggal, dengan `''` untuk menulis tanda kutip di dalamnya, dan literal angka.
+- Operator `||`, `+`, `-`, `*`, `/`, `%`, `=`, `<>`, `!=`, `<`, `>`, `<=`, `>=`, koma, dan tanda kurung.
+- Kata kunci `CASE`, `WHEN`, `THEN`, `ELSE`, `END`, `NULL`, `AND`, `OR`, `NOT`, `IS`, `IN`, dan `LIKE`.
+- Fungsi `CONCAT`, `CONCAT_WS`, `COALESCE`, `IFNULL`, `NVL`, `NULLIF`, `UPPER`, `LOWER`, `INITCAP`, `TRIM`, `LTRIM`, `RTRIM`, `SUBSTR`, `SUBSTRING`, `LENGTH`, `REPLACE`, `LPAD`, `RPAD`, `ROUND`, `ABS`, dan `TO_CHAR`.
+
+Entri berikut ditolak dengan [400 — Field Select Tidak Valid](#400--field-select-tidak-valid):
+
+| Entri | Alasan |
+|-------|--------|
+| `"internal_note"` | Kolom tidak terdaftar di `readableFields` |
+| `"COALESCE(internal_note, '-') AS note"` | Ekspresi memakai kolom yang tidak terdaftar |
+| `"supplier_code\|\|supplier_name"` | Ekspresi tanpa alias |
+| `"(SELECT password FROM users) AS p"` | Subquery tidak diizinkan |
+| `"pg_sleep(5) AS s"` | Fungsi di luar daftar |
+| `"a.supplier_name AS nm"` | Nama kolom ber-prefix tabel tidak diizinkan |
+| `"supplier_name -- AS x"` | Komentar SQL, titik koma, tanda kutip ganda, dan backslash di dalam literal tidak diizinkan |
+
+Daftar di atas hanya menentukan ekspresi yang lolos validasi. Fungsi dan operator tetap dijalankan oleh database, sehingga pilih yang didukung dialect yang dipakai. Misalnya `NVL` hanya ada di Oracle, sedangkan `IFNULL` ada di MySQL dan SQLite. Operator `||` menggabungkan teks di PostgreSQL, SQLite, dan Oracle, tetapi di MySQL bermakna OR logika. Untuk menggabungkan teks di MySQL, gunakan `CONCAT`.
 
 ---
 
@@ -454,9 +490,8 @@ expression `... AS alias`) yang ditulis di `select`. Tanpa `select`, response
 tetap bentuk lama `{ id, text }` tanpa `row`, sehingga konsumen yang sudah ada
 tidak perlu penyesuaian apa pun.
 
-Kolom yang diminta di `select` tetap tunduk pada whitelist kolom yang berlaku
-untuk endpoint ini (lihat [400 — Field Select Tidak Valid](#400--field-select-tidak-valid))
-— kolom yang tidak diizinkan tetap ditolak, tidak pernah ikut masuk `row`.
+Kolom yang diminta di `select` tunduk pada [Aturan Kolom `select`](#aturan-kolom-select).
+Kolom yang tidak diizinkan ditolak dengan 400 dan tidak pernah ikut masuk `row`.
 
 Kolom yang dipakai sebagai `text` mengikuti aturan berikut bila
 `fieldNameLookup.text` tidak dikonfigurasi secara eksplisit (lihat
