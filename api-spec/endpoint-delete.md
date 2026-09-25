@@ -10,7 +10,7 @@
 | **URL** | `/api/{project}/{endpoint}/delete` |
 | **Content-Type** | `application/json` |
 | **HTTP Status Sukses** | `200 OK` |
-| **Database** | PostgreSQL, MySQL, Oracle |
+| **Database** | PostgreSQL, MySQL, SQLite, Oracle |
 | **Parameter Wajib** | `where` (menentukan record yang akan dihapus) |
 | **Cache** | Invalidasi otomatis setelah delete berhasil |
 | **Distributed Lock** | Per-record WRITE lock (jika diaktifkan) |
@@ -22,7 +22,7 @@
 
 Endpoint `/delete` digunakan untuk menghapus satu atau lebih record dari tabel database. Parameter `where` bersifat **wajib** sehingga request tanpa parameter `where` akan langsung ditolak dengan error 400. Hal ini mencegah penghapusan data secara tidak sengaja.
 
-Sebelum menghapus, sistem akan mengambil data lama (old data) untuk keperluan event lifecycle dan audit. Data yang berhasil dihapus dikembalikan dalam response `deleted_items`.
+Sebelum menghapus, sistem mengambil data lama (old data) untuk keperluan event lifecycle dan audit. Setiap record yang berhasil dihapus dikembalikan di `deleted_items`, berisi field yang dideklarasikan di `fieldName`.
 
 Dokumen ini mendeskripsikan perilaku default (DELETE fisik). Untuk resource dengan fitur opt-in [`softDelete`](../catalogs/rdf/soft-delete.md) aktif, operasi penghapusan berubah menjadi penandaan flag, lihat [Perilaku pada Tabel Soft-Delete](#perilaku-pada-tabel-soft-delete).
 
@@ -117,11 +117,14 @@ Endpoint `/delete` mendukung format request body alternatif dengan wrapper `{dat
 ```json
 {
   "success": true,
-  "message": "Successfully deleted 1 record",
+  "message": "Successfully deleted 1 record(s)",
   "deleted_count": 1,
   "deleted_items": [
     {
-      "supplier_id": "550e8400-e29b-41d4-a716-446655440000"
+      "supplier_id": "550e8400-e29b-41d4-a716-446655440000",
+      "supplier_code": "SUP-001",
+      "supplier_name": "PT Maju Jaya",
+      "email": "info@majujaya.co.id"
     }
   ],
   "timestamp": "2026-03-30T15:00:00.000Z"
@@ -133,8 +136,10 @@ Endpoint `/delete` mendukung format request body alternatif dengan wrapper `{dat
 | `success` | boolean | `true` jika operasi berhasil |
 | `message` | string | `"Successfully deleted {n} record(s)"` atau `"No records deleted"` |
 | `deleted_count` | number | Jumlah record yang berhasil dihapus |
-| `deleted_items` | array | Primary key setiap record yang dihapus. Field lain tidak disertakan |
+| `deleted_items` | array | Setiap record yang dihapus, berisi field yang dideklarasikan di `fieldName`, sama seperti response `/create` dan `/update`. Kolom tabel yang tidak dideklarasikan tidak disertakan |
 | `timestamp` | string | Waktu eksekusi (ISO 8601) |
+
+Bentuk `deleted_items` dan nilai `deleted_count` sama di keempat database, baik resource memakai [`components`](../catalogs/rdf/components.md) maupun tidak. Bila `where` cocok dengan beberapa record, `deleted_count` berisi jumlah seluruh record yang terhapus dan `deleted_items` memuat semuanya.
 
 ### Response Error
 
