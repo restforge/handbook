@@ -1,0 +1,71 @@
+{
+    "tableName": "category",
+    "primaryKey": "category_id",
+    "fieldName": [
+        "category_id",
+        "category_code",
+        "category_name",
+        "description",
+        "is_active"
+    ],
+    "fieldValidation": [
+        {
+            "name": "category_id",
+            "type": "uuid",
+            "constraints": {
+                "primaryKey": true,
+                "autoGenerate": true
+            }
+        },
+        {
+            "name": "category_code",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "minLength": 2,
+                "maxLength": 20,
+                "unique": true,
+                "uppercase": true,
+                "trim": true
+            }
+        },
+        {
+            "name": "category_name",
+            "type": "string",
+            "constraints": {
+                "required": true,
+                "minLength": 2,
+                "maxLength": 100,
+                "trim": true
+            }
+        },
+        {
+            "name": "description",
+            "type": "string",
+            "constraints": {
+                "maxLength": 500,
+                "trim": true
+            }
+        },
+        {
+            "name": "is_active",
+            "type": "boolean",
+            "constraints": {
+                "default": true
+            }
+        }
+    ],
+    "fieldNameLookup": {
+        "id": "category_id",
+        "text": "category_name"
+    },
+    "action": {
+        "datatables": true,
+        "create": true,
+        "update": true,
+        "delete": true,
+        "first": true,
+        "lookup": true,
+        "read": true
+    }
+}
