@@ -78,6 +78,38 @@ Bagian `<sumber>` pada pesan terakhir terisi `the SELECT result columns of datat
 
 > **Peringatan upgrade:** Aturan ini memutus payload lama. Payload lapangan yang menulis `datatablesWhere` dengan prefiks alias (misalnya `a.supplier_code`) sebelumnya tetap lolos generate walau entri itu tidak pernah berfungsi, sekarang menghentikan `endpoint create` dan `payload validate`. Perbaikannya adalah menyunting entri menjadi nama kolom hasil SELECT yang disebutkan pesan error, misalnya `a.supplier_code` menjadi `supplier_code`. Jangan mengandalkan `payload sync` untuk pembersihan ini karena sync mencocokkan `datatablesWhere` hanya terhadap kolom fisik tabel bertipe string, sehingga kolom hasil JOIN yang sah ikut terbuang. Konsekuensi operasionalnya dijelaskan di [`endpoint create`](../../commands/restforge-backend/endpoint/create.md#validasi-schema-database) dan [`payload validate`](../../commands/restforge-backend/payload/validate.md#logika-validasi).
 
+## Aturan Kolom JOIN di `datatablesQuery`
+
+Kolom dari tabel JOIN tidak boleh memakai nama kolom tabel utama. Bila nama itu dipakai, response datatables membawa nilai tabel JOIN di key tersebut, sehingga form tidak bisa membaca nilai asli kolom tabel utama.
+
+Contoh berikut ditolak karena `status` adalah kolom FK di `guest_book`:
+
+```sql
+SELECT t.id, t.visitor_name, s.status_name AS status
+FROM guest_book t
+JOIN statuses s ON t.status = s.id
+```
+
+Kolom FK dipilih dari tabel utama, dan kolom tampilan dari tabel JOIN memakai namanya sendiri:
+
+```sql
+SELECT t.id, t.visitor_name, t.status, s.status_name
+FROM guest_book t
+JOIN statuses s ON t.status = s.id
+```
+
+Pola yang benar ini sama dengan hasil `payload generate`. Generator selalu memilih kolom FK dari tabel utama, dan kolom JOIN yang namanya bentrok diberi prefix nama tabel referensi.
+
+| Aturan | Pesan Error |
+|--------|-------------|
+| Kolom tabel JOIN tidak boleh memakai nama kolom tabel utama, tanpa memperhatikan besar-kecil huruf. Kolom tabel utama dikenali dari kolom lokal pada kondisi JOIN dan dari nama field di `fieldValidation` | `datatablesQuery in <file> selects joined column(s) '<ekspresi>' under the name of a main table column ('<kolom>'). The response would carry the joined value instead of the main table value, so forms cannot read the original value. Select the main table column itself (e.g. '<alias>.<kolom>') and give the joined column a different name.` |
+
+Aturan ini diperiksa untuk `datatablesQuery` inline. Query dalam referensi `file:` diperiksa saat [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#batasan), yang menampilkan peringatan dan tidak membuat field tersebut di form.
+
+Kolom tampilan JOIN yang tercantum di `fieldName` tetap sah selama namanya bukan kolom tabel utama, misalnya `s.status_name` atau `c.name AS company_name`.
+
+> **Peringatan upgrade:** RDF tulisan manual yang memakai pola ini sebelumnya lolos `payload validate`, tetapi field FK-nya hilang dari form hasil `payload migrate`. RDF semacam itu sekarang menghentikan `payload validate` dan `endpoint create`. Perbaikannya adalah mengubah `datatablesQuery` mengikuti contoh pola yang benar di atas.
+
 ## Validasi Schema Database
 
 Selain validasi shape RDF di atas, command `restforge endpoint create`
