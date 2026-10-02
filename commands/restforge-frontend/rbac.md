@@ -84,19 +84,29 @@ npx restforge-designer rbac --create --project=myapp --overwrite
 ### Output
 
 ```
-RBAC editor created
-Project    : myapp
-Target dir : frontend/apps/myapp
-UDF        : frontend/payload/myapp.json
-Written    : rbac-users.html, rbac-roles.html, rbac-role-permissions.html, js/permission-grouping.js, js/rbac-users.js, js/rbac-roles.js, js/rbac-role-permissions.js
-Skipped    : (none)
-Archived   : (none)
-Navigation : Administration group added
+╭── RestForge Designer RBAC ───────────────────╮
+│ RBAC editor created                          │
+│ Project    : myapp                           │
+│ Target dir : frontend/apps/myapp             │
+│ UDF        : frontend/payload/myapp.json     │
+│ Written    : rbac-users.html                 │
+│              rbac-roles.html                 │
+│              rbac-role-permissions.html      │
+│              js/permission-grouping.js       │
+│              js/rbac-users.js                │
+│              js/rbac-roles.js                │
+│              js/rbac-role-permissions.js     │
+│ Skipped    : (none)                          │
+│ Archived   : (none)                          │
+│ Navigation : Administration group added      │
+╰──────────────────────────────────────────────╯
 
 Next: npx restforge-designer generate --payload=frontend/payload/myapp.json --project=myapp --frontend-path=frontend/apps --overwrite
 ```
 
-Menjalankan perintah yang sama untuk kedua kalinya melewati ketujuh file dan menampilkan `Navigation : unchanged`.
+Setiap file ditulis satu per baris. Perintah lanjutan dicetak di bawah kotak sebagai satu baris utuh, sehingga dapat langsung di-copy.
+
+Menjalankan perintah yang sama untuk kedua kalinya memindahkan ketujuh file ke `Skipped` dan menampilkan `Navigation : unchanged ('rbac-users.html' is already in the menu)`. Dengan `--overwrite`, baris pertama `Archived` berisi folder arsip, lalu diikuti nama file yang diarsipkan.
 
 ### Error Umum
 
