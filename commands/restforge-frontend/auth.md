@@ -48,7 +48,11 @@ npx restforge-designer auth --create --project=myapp --overwrite
 Me-retrofit kerangka auth lengkap ke project frontend yang halamannya sudah
 di-generate, tanpa menyentuh page files dan tanpa merusak kustomisasi. Dipakai
 saat aplikasi berjalan ingin dinyalakan auth-nya belakangan, termasuk saat
-`generate` menampilkan warning artefak auth hilang.
+`generate` menampilkan warning artefak auth hilang. Warning itu muncul untuk
+aplikasi `vanilla-js-custom` dan aplikasi `vanilla-js-auth` tanpa blok `auth`
+yang memuat `appCode` dan `authApiUrl` di payload UDF. Aplikasi `vanilla-js-auth`
+dengan blok tersebut tidak mendapat warning soal `js/rfx_auth.js` dan tidak
+membutuhkan `--attach`.
 
 ### Sintaks
 
@@ -68,7 +72,7 @@ npx restforge-designer auth --attach --project=<NAME> [OPTIONS]
 
 ### Apa yang Dikerjakan
 
-> `--attach` tidak dipakai dalam alur [`auth-service`](../restforge-backend/auth-service/README.md). Alur itu berakhir di [`generate`](./generate.md), dan `generate` tidak memperingatkan `js/rfx_auth.js` untuk aplikasi auth-service.
+> `--attach` tidak dipakai dalam alur [`auth-service`](../restforge-backend/auth-service/README.md). Alur itu berakhir di [`generate`](./generate.md), dan `generate` tidak memperingatkan `js/rfx_auth.js` untuk aplikasi `vanilla-js-auth` yang blok `auth`-nya memuat `appCode` dan `authApiUrl`. Halaman aplikasi seperti itu mengirim token lewat `js/common.js` milik plugin, sehingga berjalan tanpa `js/rfx_auth.js`.
 
 Retrofit bekerja dalam dua lapisan sesuai kondisi project:
 
@@ -76,7 +80,10 @@ Retrofit bekerja dalam dua lapisan sesuai kondisi project:
    `<script src="js/rfx_auth.js">` ke halaman existing (kecuali halaman login),
    dan tulis marker `embeddedAuth` ke `payload/app-config.json`. Halaman hasil
    generate memanggil kontrak ini untuk menyertakan header `Authorization` pada
-   setiap request API.
+   setiap request API. Aplikasi `vanilla-js-auth` dengan blok `auth` yang memuat
+   `appCode` dan `authApiUrl` tidak membutuhkan lapisan ini, karena token dikirim
+   lewat `js/common.js` plugin dan pemanggilan `window.Auth` di halaman hanya
+   berjalan bila objek itu ada.
 2. **Artefak login plugin (bila aktif)** — bila payload UDF project memuat blok
    `auth` dan plugin-nya `vanilla-js-auth` atau `vanilla-js-custom`, render juga
    `js/auth.js`, `login.html`, dan `js/login.js` versi plugin, lalu injeksikan
@@ -106,7 +113,8 @@ npx restforge-designer auth --attach --project=myapp --overwrite
 | Kebutuhan | Mode |
 |-----------|------|
 | Menambah overlay login/signup `rfx_auth` standalone ke app apa pun | `--create` |
-| Melengkapi kerangka auth project ber-plugin `vanilla-js-auth`/`vanilla-js-custom` yang halamannya sudah di-generate | `--attach` |
+| Melengkapi kerangka auth project ber-plugin `vanilla-js-custom`, atau `vanilla-js-auth` tanpa blok `auth` yang memuat `appCode` dan `authApiUrl`, yang halamannya sudah di-generate | `--attach` |
+| Project ber-plugin `vanilla-js-auth` dengan blok `auth` yang memuat `appCode` dan `authApiUrl` (alur `auth-service`) | `generate` saja, tanpa `--attach` atau `--create` |
 
 ---
 
@@ -151,8 +159,11 @@ npx restforge-designer auth --remove --project=myapp --force
 ## Kontrak `window.Auth`
 
 `js/rfx_auth.js` mengekspos objek global `window.Auth` yang dipakai halaman
-hasil generate. Kontrak ini juga menjadi acuan bila aplikasi ingin memanggil
-API secara manual dari script kustom.
+hasil generate pada aplikasi `vanilla-js-custom` dan `vanilla-js-auth` tanpa
+blok `auth` yang memuat `appCode` dan `authApiUrl`. Aplikasi `vanilla-js-auth`
+dengan blok tersebut tidak memuat `js/rfx_auth.js`, sehingga halamannya tidak
+memanggil kontrak ini. Kontrak ini juga menjadi acuan bila aplikasi ingin
+memanggil API secara manual dari script kustom.
 
 | Anggota | Keterangan |
 |---------|-----------|
