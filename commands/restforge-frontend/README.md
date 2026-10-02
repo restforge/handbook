@@ -20,6 +20,7 @@ Designer selalu dipanggil dengan `npx restforge-designer` karena binary di-bundl
 | `generate` | Generate aplikasi frontend dari UDF | [`generate.md`](./generate.md) |
 | `catalog` | Emit catalog UDF (JSON) dari konstanta validator | [`catalog.md`](./catalog.md) |
 | `auth` | Install (`--create`), retrofit (`--attach`), atau hapus (`--remove`) scaffold auth pada project frontend | [`auth.md`](./auth.md) |
+| `rbac` | Buat editor RBAC (`--create`) untuk aplikasi yang memakai auth-service | [`rbac.md`](./rbac.md) |
 | `plugins list` | Daftar plugin yang ter-install | [`plugins-list.md`](./plugins-list.md) |
 | `plugins inspect` | Tampilkan metadata satu plugin | [`plugins-inspect.md`](./plugins-inspect.md) |
 | `plugins scaffold` | Scaffold folder plugin custom baru | [`plugins-scaffold.md`](./plugins-scaffold.md) |

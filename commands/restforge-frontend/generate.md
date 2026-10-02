@@ -131,6 +131,18 @@ Warning bersifat informatif: generate tetap sukses (exit code `0`) dan tidak ada
 file yang diubah oleh pemeriksaan ini. Jalankan [`auth --attach`](./auth.md)
 untuk memasang artefak yang hilang; setelah terpasang, warning tidak muncul lagi.
 
+#### Aplikasi dengan auth-service
+
+Aplikasi yang memakai layanan [`auth-service`](../restforge-backend/auth-service/README.md) tidak membutuhkan `js/rfx_auth.js`, sehingga `generate` tidak memperingatkan file tersebut. Aplikasi dianggap memakai auth-service bila plugin-nya `vanilla-js-auth` dan UDF memuat blok `auth` dengan `appCode` dan `authApiUrl` yang tidak kosong. Blok ini ditulis `payload migrate` saat `--auth-app-code` dan `--auth-api-url` diberikan.
+
+| Kondisi UDF | Peringatan `js/rfx_auth.js` |
+|-------------|--------------------------|
+| `vanilla-js-auth` dengan blok `auth` (`appCode` dan `authApiUrl` terisi) | Tidak muncul |
+| `vanilla-js-auth` tanpa blok `auth`, atau blok `auth` tidak lengkap | Muncul |
+| `vanilla-js-custom`, dengan atau tanpa blok `auth` | Muncul |
+
+Untuk aplikasi auth-service, artefak login plugin (`js/auth.js`, `login.html`, `js/login.js`, dan blok auth di `js/config.js`) tetap diperiksa. Bila ada yang hilang, petunjuknya meminta `generate` dijalankan tanpa `--scope=form`, bukan `auth --attach`.
+
 ## Exit Code
 
 | Exit Code | Kondisi |

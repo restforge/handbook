@@ -47,9 +47,9 @@ Guard membaca token `Bearer` dari header `Authorization`, lalu:
 | Permission yang dituntut tidak ada di klaim `permissions` | `403` |
 | Token valid dan permission cocok | Request diteruskan |
 
-Token diharapkan memuat klaim `app` (kode aplikasi), `roles` (array), dan
-`permissions` (array), seperti yang diterbitkan layanan auth RESTForge saat
-login. Role `SUPER_ADMIN` dan `OWNER` melewati pemeriksaan permission.
+Token harus berasal dari layanan [auth-service](../../commands/restforge-backend/auth-service/README.md). Layanan itu mengisi klaim `app` (kode aplikasi), `roles` (array), dan `permissions` (array) saat login, dan guard memverifikasi tanda tangan token dengan kunci yang sama. Role `SUPER_ADMIN` dan `OWNER` melewati pemeriksaan permission.
+
+Perintah [`auth-service link`](../../commands/restforge-backend/auth-service/link.md) memasang blok `authGuard` ke RDF project dan menulis `AUTH_APP_CODE` serta kunci verifikasi ke env aplikasi, sehingga keduanya tidak perlu ditulis manual.
 
 ### Pemetaan Permission per Endpoint
 

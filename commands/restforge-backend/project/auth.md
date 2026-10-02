@@ -118,6 +118,10 @@ Konsumen yang memakai JavaScript SDK (`project sdk`) cukup memanggil
 Undang anggota tenant, penegakan RBAC penuh, dan frontend Designer (tombol login
 otomatis) belum dicakup versi ini.
 
+Aplikasi yang membutuhkan role, permission per resource, dan editor RBAC memakai
+[`auth-service`](../auth-service/README.md), bukan `project auth`. Satu project memakai salah satu:
+`auth-service link` menolak project yang sudah memasang `project auth`.
+
 ---
 
 **Lihat juga**: [`project/`](./) · [`commands/`](../) · [`README`](../../../README.md)

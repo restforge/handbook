@@ -15,7 +15,7 @@ Kedua folder berisi dokumentasi binary terpisah. Pattern command berbeda di seti
 
 ## Perintah Operasi Backend
 
-Pattern: `npx restforge <resource> <verb> [options]`. Total **47 public command** (4 runtime server + 2 verb global + 41 CLI generator) dan **2 binary Kafka consumer**.
+Pattern: `npx restforge <resource> <verb> [options]`. Total **52 public command** (4 runtime server + 2 verb global + 46 CLI generator) dan **2 binary Kafka consumer**.
 
 Detail dan daftar resource lengkap ada di [`restforge-backend/README.md`](./restforge-backend/README.md).
 
@@ -37,6 +37,7 @@ Quick-reference resource:
 | `config` | Mengelola config schema, template, default | [`restforge-backend/config/`](./restforge-backend/config/) |
 | `catalog` | Introspeksi spesifikasi RESTForge (output JSON catalog) | [`restforge-backend/catalog/`](./restforge-backend/catalog/) |
 | `project` | Operasi level project (list, delete) | [`restforge-backend/project/`](./restforge-backend/project/) |
+| `auth-service` | Layanan auth berbasis RBAC: init, bootstrap, link, manifest, provision | [`restforge-backend/auth-service/`](./restforge-backend/auth-service/) |
 
 File khusus:
 
@@ -49,7 +50,7 @@ File khusus:
 
 ## Perintah Operasi Frontend
 
-Pattern: `npx restforge-designer <verb> [options]`. Total **9 verb** (1 di antaranya parent dengan subcommand: `plugins`).
+Pattern: `npx restforge-designer <verb> [options]`. Total **10 verb** (1 di antaranya parent dengan subcommand: `plugins`).
 
 Detail dan daftar verb lengkap ada di [`restforge-frontend/README.md`](./restforge-frontend/README.md).
 
@@ -63,6 +64,7 @@ Quick-reference verb:
 | `generate` | Generate aplikasi frontend dari UDF | [`restforge-frontend/generate.md`](./restforge-frontend/generate.md) |
 | `catalog` | Emit catalog UDF (JSON) dari konstanta validator | [`restforge-frontend/catalog.md`](./restforge-frontend/catalog.md) |
 | `auth` | Install, retrofit, atau hapus scaffold auth pada project frontend | [`restforge-frontend/auth.md`](./restforge-frontend/auth.md) |
+| `rbac` | Membuat editor RBAC untuk aplikasi yang memakai auth-service | [`restforge-frontend/rbac.md`](./restforge-frontend/rbac.md) |
 | `plugins list` | Daftar plugin ter-install | [`restforge-frontend/plugins-list.md`](./restforge-frontend/plugins-list.md) |
 | `plugins inspect` | Metadata plugin tertentu | [`restforge-frontend/plugins-inspect.md`](./restforge-frontend/plugins-inspect.md) |
 | `plugins scaffold` | Scaffold plugin custom baru | [`restforge-frontend/plugins-scaffold.md`](./restforge-frontend/plugins-scaffold.md) |

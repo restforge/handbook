@@ -31,6 +31,8 @@ npx restforge payload migrate --name=<STRING> --project=<STRING> [options]
 | `--app-code <STRING>` | mengikuti `--project` | Kode aplikasi kebab-case yang dipakai di `appConfig.appCode` UDF output. Dipakai juga sebagai nama file aggregator (`<appCode>.json`) |
 | `--plugin <STRING>` | `"vanilla-js-basic"` | Plugin ID Designer yang ditulis di `appConfig.plugin` UDF output |
 | `--port <NUMBER>` | `8000` | Port aplikasi frontend yang ditulis ke `appConfig.port`. Independen dari backend port yang dipakai di `apiBaseUrl` |
+| `--auth-app-code <STRING>` | `null` | App code di layanan auth, ditulis ke blok `auth.appCode` UDF. Wajib dipasangkan dengan `--auth-api-url`. Tanpa kedua flag, blok `auth` tidak ditulis |
+| `--auth-api-url <STRING>` | `null` | Alamat API layanan auth, ditulis ke `auth.authApiUrl`, misalnya `http://localhost:3100/api/auth-service`. Wajib dipasangkan dengan `--auth-app-code` |
 | `--overwrite` | `false` | Buat ulang file page di `pages\` yang sudah ada dari nol sehingga perubahan manual pada page hilang, serta timpa `app-config.json` bila aggregator belum ada. Tanpa flag ini, page yang sudah ada digabung (lihat [Migrate Ulang Page yang Sudah Ada](#migrate-ulang-page-yang-sudah-ada)). Aggregator dan `app-config.json` milik aplikasi yang sudah ada selalu digabung. File yang isinya berubah diarsipkan lebih dulu ke `.restforge/archive/` |
 
 ## Contoh
@@ -378,6 +380,23 @@ perubahan manual di page tersebut hilang, dan file lama tersimpan di arsip.
 Karena nama file aggregator ditentukan oleh `--app-code` (atau `--project`), mengakhiri
 `--output` dengan `.json` tidak mengubah nama file output. Nilai berakhiran `.json` hanya
 diturunkan ke direktori induknya sebagai root split.
+
+### Permissions untuk Plugin `vanilla-js-auth`
+
+Dengan `--plugin=vanilla-js-auth`, migrate menulis blok `permissions` di aggregator untuk RDF yang memakai [`authGuard`](../../../catalogs/rdf/auth-guard.md) dan mengaktifkan aksi `read`. Setiap entri memuat satu key, yaitu `read`, dengan nilai `<RESOURCE>_READ`. Nilai ini sama dengan kode permission yang didaftarkan [`auth-service provision`](../auth-service/provision.md) dan yang ada di token login.
+
+```json
+{
+  "permissions": {
+    "item": { "read": "ITEM_READ" },
+    "category": { "read": "CATEGORY_READ" }
+  }
+}
+```
+
+Sidebar memakai entri ini sehingga menu page hanya tampil untuk pengguna yang memegang permission READ-nya. Lihat [Menu dan Permission](../../../catalogs/udf/navigation.md#menu-dan-permission). Plugin lain tidak mendapat entri otomatis.
+
+Blok `permissions` dipertahankan pada migrate ulang. Entri yang tidak diubah manual mengikuti RDF terbaru, sedangkan entri yang diubah manual dipertahankan dan dihitung di baris `Kept customization(s)`. Entri yang merujuk page yang sudah tidak ada di aplikasi dipertahankan dan memunculkan peringatan. Blok `permissions` yang ditulis manual juga tetap utuh pada plugin selain `vanilla-js-auth`.
 
 ## Auto-Discovery JOIN
 

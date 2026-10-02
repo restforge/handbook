@@ -112,12 +112,34 @@ Link ke halaman custom yang ditulis manual dan tidak punya page UDF, misalnya ha
 | `label` | string | ✓ | Label menu di sidebar |
 | `href` | string | ✓ | File HTML tujuan, relatif terhadap folder aplikasi, misalnya `report-payroll.html` |
 | `permission` | string \| array | ✗ | Kode permission untuk menampilkan menu. Bila berupa array, menu tampil selama pengguna memegang salah satu kode di dalamnya |
+| `roles` | array | ✗ | Daftar role untuk menampilkan menu. Menu tampil selama pengguna memegang salah satu role di dalamnya. Lihat [Properti `roles` pada Item `link`](#properti-roles-pada-item-link) |
 | `icon` | string | ✗ | Ikon menu. Hanya berlaku di depth 1 |
 | `badgeColor` | string | ✗ | Warna badge. Valid: `danger`, `info`, `primary`, `success`, `warning` |
 
 Item `link` boleh ditempatkan di tingkat mana pun, termasuk di dalam group. Menu ditandai aktif saat halaman `href` dibuka, dan group induknya ikut terbuka. Item `link` dengan `href` `index.html` atau `dashboard.html` menggantikan menu Home bawaan sidebar.
 
-`permission` hanya dipakai pada aplikasi yang memakai blok `auth`. Tanpa blok `auth`, menu selalu tampil.
+`permission` dan `roles` hanya dipakai pada aplikasi yang memakai blok `auth`. Tanpa blok `auth`, menu selalu tampil.
+
+#### Properti `roles` pada Item `link`
+
+`roles` membatasi menu berdasarkan role pengguna, misalnya untuk menu administrasi yang hanya boleh dilihat OWNER dan ADMIN.
+
+```json
+{
+    "type": "link",
+    "label": "Users",
+    "href": "rbac-users.html",
+    "roles": ["OWNER", "ADMIN", "SUPER_ADMIN"]
+}
+```
+
+- Nilai berupa array string yang tidak kosong. Menu tampil bila pengguna memegang minimal satu role di array.
+- Item `link` tanpa `roles` tidak dibatasi role.
+- Group yang seluruh isinya tersembunyi ikut tersembunyi.
+- Bila nilai berupa satu string, validator menampilkan peringatan dan string itu dipakai sebagai satu role. Nilai lain yang tidak valid, seperti array kosong, dibuang sehingga item tidak dibatasi role.
+- Penyembunyian hanya mengatur tampilan. Hak akses tetap ditegakkan backend.
+
+Key `roles` hanya berlaku pada item `link`. Grup Administration yang dibuat [`rbac --create`](../../commands/restforge-frontend/rbac.md) memakainya.
 
 ### Tipe `group`
 
@@ -205,6 +227,7 @@ Atribut `icon` hanya dirender di depth 1 (top-level). Icon di depth lebih dalam 
 | `children` non-empty untuk type `group` | Error: `"<path>.children must be a non-empty array when type='group'"` |
 | `label` wajib untuk type `link` | Error: `"<path>.label must be provided when type='link'"` |
 | `href` wajib untuk type `link` | Error: `"<path>.href must be a non-empty string when type='link'"` |
+| `roles` pada type `link` berupa array string yang tidak kosong | Warning: `"<path>.roles should be a non-empty array of non-empty strings, e.g. [\"ADMIN\"]"` |
 | `permission` pada type `link` berupa string atau array string yang tidak kosong | Error: `"<path>.permission must be a non-empty string or a non-empty array of non-empty strings"` |
 | Depth maks 3 | Error: `"<path> exceeds the maximum nesting depth of 3..."` |
 
@@ -218,6 +241,8 @@ Pada aplikasi yang memakai blok `auth`, sidebar menyembunyikan menu yang permiss
 | `link` | Properti `permission` item tersebut. Tanpa properti ini, menu selalu tampil |
 
 Group yang semua isinya tersembunyi ikut disembunyikan, termasuk group yang hanya berisi sub-group kosong. Separator tidak dihitung sebagai isi group.
+
+Untuk plugin `vanilla-js-auth`, `payload migrate` menulis entri `permissions.<pageRef>.read` secara otomatis dari RDF yang memakai `authGuard`, dengan nilai berformat `<RESOURCE>_READ`. Menu page tersebut dengan begitu hanya tampil untuk pengguna yang memegang permission READ resource-nya. Plugin lain tidak mendapat entri ini. Entri yang ditulis manual dipertahankan pada migrate ulang. Lihat [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#permissions-untuk-plugin-vanilla-js-auth).
 
 ## Migrate Ulang
 

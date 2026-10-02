@@ -68,6 +68,8 @@ npx restforge-designer auth --attach --project=<NAME> [OPTIONS]
 
 ### Apa yang Dikerjakan
 
+> `--attach` tidak dipakai dalam alur [`auth-service`](../restforge-backend/auth-service/README.md). Alur itu berakhir di [`generate`](./generate.md), dan `generate` tidak memperingatkan `js/rfx_auth.js` untuk aplikasi auth-service.
+
 Retrofit bekerja dalam dua lapisan sesuai kondisi project:
 
 1. **Kerangka `window.Auth` (selalu)** — pasang `js/rfx_auth.js`, inject
@@ -188,7 +190,8 @@ mengikuti login plugin sehingga kedua sistem membaca sesi yang sama.
 ## Catatan
 
 Google Sign-In dan paket `@restforgejs/auth` (auth+RBAC backend) tidak dicakup
-command ini. `--create`/`--remove` mengelola overlay `rfx_auth` embedded;
+command ini. Aplikasi yang membutuhkan role, permission, dan editor RBAC memakai
+[`auth-service`](../restforge-backend/auth-service/README.md) beserta [`rbac --create`](./rbac.md). `--create`/`--remove` mengelola overlay `rfx_auth` embedded;
 `--attach` juga merender artefak login plugin `vanilla-js-auth`/
 `vanilla-js-custom` bila payload project mengaktifkan blok `auth`. Proteksi
 sisi server dikonfigurasi terpisah lewat blok payload backend

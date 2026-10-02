@@ -55,6 +55,7 @@ Setiap resource memiliki satu atau lebih verb. Detail flag per verb ada di folde
 | `config` | `schema`, `template`, `set-default`, `get-default`, `clear-default`, `list` | Kelola config schema, template, dan default config per working directory | [`config/`](./config/) |
 | `catalog` | `field-validation`, `query-declarative`, `dashboard`, `dbschema` | Introspeksi spesifikasi RESTForge (output JSON catalog) | [`catalog/`](./catalog/) |
 | `project` | `list`, `delete`, `auth`, `sdk` | Operasi level project | [`project/`](./project/) |
+| `auth-service` | `init`, `bootstrap`, `link`, `manifest`, `provision` | Layanan auth berbasis RBAC per aplikasi | [`auth-service/`](./auth-service/) |
 
 ## Binary Kafka Consumer
 
