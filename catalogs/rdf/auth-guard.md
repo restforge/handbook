@@ -59,13 +59,20 @@ endpoint:
 
 | Aksi | Action endpoint |
 |------|-----------------|
-| `CREATE` | `create`, `create-composite`, `import-upload`, `import-commit` |
-| `READ` | `read`, `read-composite`, `datatables`, `lookup`, `first`, `aggregate`, `export`, `export-status`, `export-download`, `import-preview`, `import-status` |
-| `UPDATE` | `update`, `update-composite`, `adjust`, `change-status`, `restore`, `upload`, `upload-url`, `upload-confirm` |
+| `CREATE` | `create`, `create-composite` |
+| `READ` | `read`, `read-composite`, `datatables`, `lookup`, `first`, `aggregate` |
+| `UPDATE` | `update`, `update-composite`, `adjust`, `restore`, `upload`, `upload-url`, `upload-confirm` |
 | `DELETE` | `delete`, `upload-delete`, `upload-cleanup` |
+| `EXPORT` | `export`, `export-status`, `export-download` |
+| `IMPORT` | `import-upload`, `import-preview`, `import-commit`, `import-status` |
+| `CHANGE_STATUS` | `change-status` |
 
-Contoh: `POST /product/datatables` menuntut permission `PRODUCT_READ`. Action di
-luar tabel cukup membawa token valid tanpa permission spesifik.
+Contoh: `POST /product/datatables` menuntut permission `PRODUCT_READ`, sedangkan
+`POST /product/export` menuntut `PRODUCT_EXPORT`. Action di luar tabel cukup
+membawa token valid tanpa permission spesifik.
+
+Export, import, dan perubahan status workflow punya permission sendiri. Hak baca
+atau ubah biasa tidak otomatis mencakup ketiganya.
 
 ## Konfigurasi Verifikasi Token (Env Runtime)
 

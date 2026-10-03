@@ -34,6 +34,8 @@ npx restforge auth-service provision --manifest=<FILE> [OPTIONS]
 
 Seluruh langkah idempoten. Menjalankan `provision` lagi hanya menambah yang belum ada, dan permission yang berubah di manifest diperbarui.
 
+Bila manifest memakai aksi yang belum terdaftar sebagai action type di database layanan auth, misalnya `PRINT` atau `CHANGE_STATUS` pada database yang di-bootstrap sebelum kedua aksi itu tersedia, `provision` menambahkannya lebih dulu. Output menampilkan baris `Action types: added PRINT, CHANGE_STATUS`. Action type menentukan urutan dan label kolom di halaman Assign Permissions.
+
 ## Nilai Default Owner
 
 Username owner memakai app code dalam huruf kecil. Untuk app code `MYAPP`, username default adalah `myapp-owner` dan email default adalah `myapp-owner@myapp.local`. Kedua nilai dapat diganti lewat `--owner-username` dan `--owner-email`.

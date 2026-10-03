@@ -25,16 +25,28 @@ npx restforge auth-service manifest --project=<NAME> [OPTIONS]
 
 1. Memilih RDF project yang `authGuard`-nya aktif.
 2. Menurunkan satu resource per endpoint. Nama resource berasal dari nama endpoint dalam huruf besar, dengan `-` menjadi `_`.
-3. Menyelaraskan aksi CRUD (`CREATE`, `READ`, `UPDATE`, `DELETE`) dengan matriks `action` RDF saat ini.
+3. Menyelaraskan aksi dengan matriks `action` RDF saat ini.
 4. Menulis manifest ke `--output`.
 
-Aksi CRUD mengikuti RDF. Bila suatu aksi dimatikan di RDF, aksi itu dilepas dari manifest dan output menampilkan catatan. Permission yang sudah terdaftar lewat `provision` tidak dihapus.
+Aksi yang diturunkan dari RDF mengikuti tabel berikut:
+
+| Aksi | Action RDF |
+|------|-----------|
+| `CREATE` | `create`, `createComposite` |
+| `READ` | `read`, `readComposite`, `datatables`, `first`, `lookup`, `aggregate` |
+| `UPDATE` | `update`, `updateComposite`, `adjust`, `restore`, `upload` |
+| `DELETE` | `delete` |
+| `EXPORT` | `export` |
+| `IMPORT` | `import` |
+| `CHANGE_STATUS` | `workflow` |
+
+Bila suatu aksi dimatikan di RDF, aksi itu dilepas dari manifest dan output menampilkan catatan. Permission yang sudah terdaftar lewat `provision` tidak dihapus.
 
 ## Menambah Isi Manifest Sendiri
 
 Manifest boleh diedit setelah dibuat. Isi berikut dipertahankan pada `manifest` berikutnya:
 
-- aksi non-CRUD, misalnya `APPROVE`
+- aksi yang tidak diturunkan dari RDF, misalnya `PRINT` atau `APPROVE`
 - `categories`, `category`, `sortOrder`, dan `description`
 
 ```json
@@ -44,12 +56,14 @@ Manifest boleh diedit setelah dibuat. Isi berikut dipertahankan pada `manifest` 
   "resources": [
     {
       "resource": "ITEM",
-      "actions": ["CREATE", "READ", "UPDATE", "DELETE", "APPROVE"],
+      "actions": ["CREATE", "READ", "UPDATE", "DELETE", "PRINT"],
       "category": "Master Data"
     }
   ]
 }
 ```
+
+`PRINT` tidak dijaga endpoint mana pun. Permission ini dipakai kode frontend untuk menampilkan atau menyembunyikan tombol cetak.
 
 Resource yang endpoint atau RDF-nya sudah dihapus tetap ada di manifest dan output menampilkan peringatan.
 
@@ -69,7 +83,7 @@ Permission manifest (config/auth-manifest.json), appCode MYAPP:
   added: ITEM
 
 Manifest written: config/auth-manifest.json
-Non-CRUD actions (e.g. APPROVE), categories, category, sortOrder, and description can be added to the file; they are kept on the next run.
+Manual actions (e.g. PRINT, APPROVE), categories, category, sortOrder, and description can be added to the file; they are kept on the next run.
 Next: npx restforge auth-service provision --manifest=config/auth-manifest.json
 ```
 
