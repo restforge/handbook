@@ -28,13 +28,28 @@ npx restforge auth-service provision --manifest=<FILE> [OPTIONS]
 ## Apa yang Dikerjakan
 
 1. Mendaftarkan aplikasi dengan app code dari manifest.
-2. Mendaftarkan satu permission untuk setiap pasangan resource dan aksi, lengkap dengan kategori dan urutan dari manifest.
-3. Membuat role `OWNER` dan memberinya seluruh permission aplikasi.
-4. Membuat user owner dan memberinya role `OWNER`.
+2. Mendaftarkan satu permission untuk setiap pasangan resource dan aksi, lengkap dengan kategori, urutan, dan description aksi dari manifest.
+3. Menyimpan description setiap resource, terpisah dari permission.
+4. Membuat role `OWNER` dan memberinya seluruh permission aplikasi.
+5. Membuat user owner dan memberinya role `OWNER`.
 
 Seluruh langkah idempoten. Menjalankan `provision` lagi hanya menambah yang belum ada, dan permission yang berubah di manifest diperbarui.
 
 Bila manifest memakai aksi yang belum terdaftar sebagai action type di database layanan auth, misalnya `PRINT` atau `CHANGE_STATUS` pada database yang di-bootstrap sebelum kedua aksi itu tersedia, `provision` menambahkannya lebih dulu. Output menampilkan baris `Action types: added PRINT, CHANGE_STATUS`. Action type menentukan urutan dan label kolom di halaman Assign Permissions.
+
+## Description Resource dan Aksi
+
+Description resource dan description aksi diambil dari manifest. Description resource tampil di baris resource pada halaman Assign Permissions, sedangkan description aksi tampil sebagai tooltip checkbox aksi itu. Bila description di manifest diubah atau dihapus, `provision` berikutnya memperbarui data yang tersimpan. Output menampilkan jumlahnya pada baris `Resources:`.
+
+Database yang di-bootstrap sebelum description resource tersedia disiapkan pada `provision` pertama, dengan output `Resources:   created table auth.app_resource`. Permission lama yang berisi salinan description resource ikut dikosongkan, kecuali permission yang punya description aksi di manifest.
+
+Halaman Assign Permissions membaca description resource lewat endpoint `permission` layanan auth. Layanan auth yang dipasang sebelum fitur ini perlu definisi endpoint `permission` versi baru. Jalankan [`init --force`](./init.md#menjalankan-ulang-dengan---force) dengan flag yang sama seperti pemasangan awal, misalnya `--port`, lalu buat ulang endpoint tersebut:
+
+```bat
+npx restforge endpoint create --project=auth-service --name=permission --payload=auth_permission.json --config=auth.env --database=postgres --force
+```
+
+Selama endpoint belum dibuat ulang, matriks tetap berjalan dan area description resource dibiarkan kosong.
 
 ## Nilai Default Owner
 
@@ -50,7 +65,7 @@ Pindahkan password ke tempat yang aman, lalu hapus file tersebut. Folder `data-s
 
 ## Dry Run
 
-`--dry-run` membaca database secara read-only untuk membandingkan manifest dengan data yang sudah ada, lalu mencetak rencana: aplikasi, permission, role, dan owner beserta statusnya. Tidak ada data yang ditulis.
+`--dry-run` membaca database secara read-only untuk membandingkan manifest dengan data yang sudah ada, lalu mencetak rencana: aplikasi, permission, description resource, role, dan owner beserta statusnya. Tidak ada data yang ditulis.
 
 ## Contoh
 
@@ -68,6 +83,7 @@ npx restforge auth-service provision --manifest=config/auth-manifest.json ^
 === Provisioning complete: MYAPP ===
 App:         created
 Permissions: 4 created, 0 updated, 0 unchanged
+Resources:   1 created, 0 updated, 0 unchanged
 Role OWNER:  created - 4 new assignment(s)
 Owner user:  created (myapp-owner <myapp-owner@myapp.local>)
 Owner role:  assigned OWNER

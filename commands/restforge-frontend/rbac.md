@@ -46,6 +46,16 @@ File yang ditulis:
 
 File yang sudah ada dilewati. Dengan `--overwrite`, file lama diarsipkan lalu ditimpa.
 
+### Matriks Assign Permissions
+
+Halaman `rbac-role-permissions.html` menampilkan satu baris per resource dan satu kolom per aksi. Description resource tampil di samping kode resource dengan warna dan ukuran huruf yang sama. Resource tanpa description membiarkan area itu kosong.
+
+Description aksi tampil sebagai tooltip checkbox aksi itu. Aksi tanpa description memakai nama permission, misalnya `Create Item`.
+
+Kedua description ditulis di manifest permission dan disimpan lewat [`auth-service provision`](../restforge-backend/auth-service/provision.md#description-resource-dan-aksi). Cara mengisinya ada di [`auth-service manifest`](../restforge-backend/auth-service/manifest.md#description-resource).
+
+Halaman yang dibuat sebelum fitur ini tidak menampilkan description resource. Jalankan `rbac --create --overwrite` agar halaman memakai versi baru.
+
 ### Grup Administration
 
 Grup yang ditambahkan ke UDF memuat dua item `link` dengan key `roles`:

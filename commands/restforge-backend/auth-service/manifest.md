@@ -26,7 +26,8 @@ npx restforge auth-service manifest --project=<NAME> [OPTIONS]
 1. Memilih RDF project yang `authGuard`-nya aktif.
 2. Menurunkan satu resource per endpoint. Nama resource berasal dari nama endpoint dalam huruf besar, dengan `-` menjadi `_`.
 3. Menyelaraskan aksi dengan matriks `action` RDF saat ini.
-4. Menulis manifest ke `--output`.
+4. Mengisi `description` resource yang belum punya description.
+5. Menulis manifest ke `--output`.
 
 Aksi yang diturunkan dari RDF mengikuti tabel berikut:
 
@@ -42,12 +43,34 @@ Aksi yang diturunkan dari RDF mengikuti tabel berikut:
 
 Bila suatu aksi dimatikan di RDF, aksi itu dilepas dari manifest dan output menampilkan catatan. Permission yang sudah terdaftar lewat `provision` tidak dihapus.
 
+## Description Resource
+
+Resource yang belum punya `description` mendapat nilai awal berbahasa Inggris. Nilainya diambil dari key `description` di RDF resource tersebut. Bila RDF tidak punya `description`, `manifest` menyusun kalimat dari nama resource, misalnya `Manage item records.` untuk resource `ITEM`.
+
+```json
+{
+  "appCode": "MYAPP",
+  "resources": [
+    {
+      "resource": "ITEM",
+      "description": "Manage item records.",
+      "actions": ["CREATE", "READ", "UPDATE", "DELETE"]
+    }
+  ]
+}
+```
+
+Description resource tampil di baris resource pada halaman Assign Permissions editor [RBAC](../../restforge-frontend/rbac.md#matriks-assign-permissions). Ganti nilainya dengan keterangan yang lebih jelas, lalu jalankan `provision`.
+
 ## Menambah Isi Manifest Sendiri
 
 Manifest boleh diedit setelah dibuat. Isi berikut dipertahankan pada `manifest` berikutnya:
 
 - aksi yang tidak diturunkan dari RDF, misalnya `PRINT` atau `APPROVE`
-- `categories`, `category`, `sortOrder`, dan `description`
+- `categories`, `category`, dan `sortOrder`
+- description resource dan description aksi
+
+Description aksi ditulis sebagai object `{ "action": "...", "description": "..." }` di dalam `actions`. `manifest` tidak pernah membuat description aksi.
 
 ```json
 {
@@ -56,7 +79,14 @@ Manifest boleh diedit setelah dibuat. Isi berikut dipertahankan pada `manifest` 
   "resources": [
     {
       "resource": "ITEM",
-      "actions": ["CREATE", "READ", "UPDATE", "DELETE", "PRINT"],
+      "description": "Product catalog with price per item.",
+      "actions": [
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE",
+        { "action": "PRINT", "description": "Print item price labels." }
+      ],
       "category": "Master Data"
     }
   ]
