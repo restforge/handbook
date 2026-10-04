@@ -1,6 +1,6 @@
-# Definisi Foreign Key Lanjutan
+# Definisi Foreign Key
 
-Untuk konfigurasi foreign key yang lebih lengkap (behavior ON DELETE, atau target table dengan PK column non-konvensional), gunakan property `relations`:
+Foreign key dideklarasikan di property `relations`. Field foreign key ditulis sebagai kolom biasa dengan tipe yang sama seperti kolom yang dirujuk, dan kolom UUID memakai `string:36`. Setiap entry `belongsTo` menyebut field lokal (`localKey`), kolom yang dirujuk (`references`), dan behavior saat parent dihapus (`onDelete`):
 
 ```javascript
 module.exports = ({ defineModel }) => defineModel('stock_inbound', {
@@ -94,7 +94,9 @@ Aturan derivasi `target`:
 
 Catatan: `relations` di sini hanya untuk definisi FK constraint di DDL. Tidak ada implikasi runtime query (karena CRUD ditangani RESTForge generator).
 
-## Mutual Exclusivity dengan `fk:` Shorthand
+## Shorthand `fk:` pada Schema Lama
+
+Parser masih menerima shorthand `fk:TABLE.COLUMN` di field agar schema lama tetap terbaca. Tabel baru tidak memakai shorthand ini; semua foreign key ditulis di `relations`, termasuk FK yang memakai `onDelete` default database.
 
 Untuk satu field, deklarasi FK hanya boleh dilakukan di **salah satu** tempat, tidak boleh di kedua tempat sekaligus:
 
@@ -105,25 +107,16 @@ Untuk satu field, deklarasi FK hanya boleh dilakukan di **salah satu** tempat, t
 | Field punya `fk:` shorthand DAN di-reference oleh `relations[*].localKey` | Error | Validator melempar error eksplisit |
 | Field tidak punya FK declaration sama sekali | Valid | Bukan FK, kolom biasa |
 
-Pembagian penggunaan:
-
-| Kasus | Cara Deklarasi |
-|-------|----------------|
-| FK tanpa custom `onDelete` (database pakai default) | `fk:` shorthand di field |
-| FK dengan custom `onDelete` (cascade, set null, dst) | `relations` di options |
-| Butuh nama relation custom untuk introspection downstream | `relations` di options |
-| Relasi `hasOne` atau `hasMany` di parent | `relations` di options (tidak ada shorthand) |
-
 ## Auto-Promotion `fk:` Shorthand ke Relations
 
-Field dengan `fk:TABLE.COLUMN` otomatis diperlakukan sebagai entry `relations` dengan default behavior, tanpa perlu ditulis manual. Aturan derivasi nama relation:
+Pada schema lama, field dengan `fk:TABLE.COLUMN` otomatis diperlakukan sebagai entry `relations` dengan default behavior. Aturan derivasi nama relation:
 
 | Pattern field | Nama relation auto-generated | Catatan |
 |---------------|------------------------------|---------|
 | Field berakhiran `_id` (misal `category_id` → fk ke `category`) | Strip suffix `_id` (`category`) | Pattern paling umum |
 | Field tidak berakhiran `_id` (misal `created_by` → fk ke `user`) | `<field>_<target_table>` (`created_by_user`) | Fallback agar tetap unik |
 
-**Input developer:**
+**Input schema lama:**
 
 ```javascript
 module.exports = ({ defineModel }) => defineModel('item_product', {

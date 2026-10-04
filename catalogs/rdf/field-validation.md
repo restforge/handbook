@@ -7,10 +7,12 @@ Array berisi aturan validasi per-field. Diterapkan pada endpoint `/create` dan `
     "fieldValidation": [
         {
             "name": "category_id",
-            "type": "uuid",
+            "type": "string",
             "constraints": {
                 "primaryKey": true,
-                "autoGenerate": true
+                "autoGenerate": true,
+                "required": true,
+                "maxLength": 36
             }
         },
         {
@@ -195,17 +197,17 @@ Saat constraint `autoGenerate: true` aktif dan request body tidak menyertakan ni
 | Privacy | Tidak ada informasi waktu | Mengandung timestamp (dapat di-decode) |
 | Format | `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` | `xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx` |
 
-**Konvensi penulisan payload**: untuk field primary key UUID, RESTForge v4 menerima dua deklarasi yang menghasilkan behavior identik:
+**Konvensi penulisan payload**: kolom UUID di SDF ditulis `string:36`, sehingga `payload generate` menurunkan primary key UUID sebagai tipe `string`:
+
+```json
+{ "name": "category_id", "type": "string", "constraints": { "primaryKey": true, "autoGenerate": true, "required": true, "maxLength": 36 } }
+```
+
+Tipe `uuid` hanya muncul bila primary key di database bertipe UUID native PostgreSQL, misalnya pada database lama yang di-introspect. Kedua tipe menghasilkan UUID v7 yang sama:
 
 ```json
 { "name": "category_id", "type": "uuid",   "constraints": { "primaryKey": true, "autoGenerate": true } }
 ```
-
-```json
-{ "name": "category_id", "type": "string", "constraints": { "primaryKey": true, "autoGenerate": true } }
-```
-
-Keduanya menghasilkan UUID v7 yang sama. Tipe `string` umum dipakai di payload starter agar konvensi seragam lintas database (PostgreSQL native UUID, MySQL/Oracle/SQLite menyimpan UUID sebagai VARCHAR).
 
 Detail lengkap setiap constraint, format error message, contoh per tipe, dan kompatibilitas mundur dengan struktur lama (`fieldName` saja tanpa `fieldValidation`) dibahas di dokumentasi fitur field validation terpisah.
 

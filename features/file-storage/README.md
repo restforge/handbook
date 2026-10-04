@@ -40,7 +40,7 @@ Metadata file disimpan sebagai array JSON pada satu kolom. Deklarasikan kolom te
 // schema/upload-item.js
 module.exports = ({ defineModel }) => defineModel('upload_item', {
   fields: {
-    upload_id:  'uuid pk',
+    upload_id:  'string:36 pk',
     name:       'string:100 notnull',
     photos:     'json',
     created_at: 'timestamp',

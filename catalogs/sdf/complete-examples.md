@@ -5,7 +5,7 @@
 ```javascript
 module.exports = ({ defineModel }) => defineModel('category', {
   fields: {
-    category_id:   'uuid pk',
+    category_id:   'string:36 pk',
     category_code: 'string:20 unique notnull',
     category_name: 'string:100 notnull',
     description:   'string:500',
@@ -24,11 +24,11 @@ module.exports = ({ defineModel }) => defineModel('category', {
 ```javascript
 module.exports = ({ defineModel }) => defineModel('item_product', {
   fields: {
-    item_product_id: 'uuid pk',
+    item_product_id: 'string:36 pk',
     product_code:    'string:20 unique notnull',
     sku:             'string:20 unique notnull',
     product_name:    'string:100 notnull',
-    category_id:     'uuid notnull',
+    category_id:     'string:36 notnull',
     brand:           'string:50',
     description:     'string:500',
     purchase_price:  'decimal:15,2 notnull default:0',
@@ -70,10 +70,10 @@ module.exports = ({ defineModel }) => defineModel('item_product', {
 ```javascript
 module.exports = ({ defineModel }) => defineModel('stock_inbound_item', {
   fields: {
-    stock_inbound_item_id: 'uuid pk',
-    stock_inbound_id:      'uuid notnull',
+    stock_inbound_item_id: 'string:36 pk',
+    stock_inbound_id:      'string:36 notnull',
     line_number:           'integer notnull',
-    item_product_id:       'uuid notnull',
+    item_product_id:       'string:36 notnull',
     qty_received:          'decimal:15,0 notnull default:0',
     uom:                   "string:10 default:'pcs'",
     unit_price:            'decimal:15,2 default:0',
@@ -121,7 +121,7 @@ tanggal yang dicatat.
 ```javascript
 module.exports = ({ defineModel }) => defineModel('attendance', {
   fields: {
-    attendance_id: 'uuid pk',
+    attendance_id: 'string:36 pk',
     employee_id:   'string:20 notnull',
     shift_start:   "time notnull default:'08:00:00'",
     clockin:       'timestamptz notnull',

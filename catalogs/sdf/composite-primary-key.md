@@ -5,8 +5,8 @@ Untuk tabel dengan composite primary key, gunakan property `primaryKey`:
 ```javascript
 module.exports = ({ defineModel }) => defineModel('inventory_balance', {
   fields: {
-    item_product_id: 'uuid',
-    warehouse_id:    'uuid',
+    item_product_id: 'string:36',
+    warehouse_id:    'string:36',
     period_date:     'date',
     qty_balance:     'decimal:15,0 default:0'
   },

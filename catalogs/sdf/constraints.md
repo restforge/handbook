@@ -8,8 +8,9 @@ Constraint mengikuti type, dipisah spasi, urutan bebas.
 | `notnull` | standalone | Field wajib diisi (tidak boleh NULL) |
 | `unique` | standalone | Nilai harus unik di seluruh tabel |
 | `default:VALUE` | dengan value | Nilai default saat insert tanpa nilai |
-| `fk:TABLE.COLUMN` | dengan value | Foreign key ke kolom tabel lain |
 | `index` | standalone | Auto-create single column index |
+
+> **Catatan**: Foreign key tidak ditulis sebagai constraint di field. Field foreign key cukup dideklarasikan sebagai kolom biasa, lalu relasinya ditulis di property `relations` (lihat [Foreign Key](#foreign-key) di bawah).
 
 > **Catatan**: Constraint `autoUpdate` **DEPRECATED** dan tidak termasuk di tabel di atas. RESTForge masih menerima token ini untuk backward compatibility, namun token tersebut tidak memiliki efek fungsional apa pun (output DDL identik dengan `'timestamp'` biasa). Auto-update untuk field `updated_at` ditangani sepenuhnya oleh runtime melalui konvensi `auditColumns` di RDF. Dokumentasi lama dapat dibaca di bagian [Constraint `autoUpdate` (DEPRECATED)](#constraint-autoupdate-deprecated) di bawah, namun **tidak boleh digunakan di template baru**.
 
@@ -18,7 +19,7 @@ Constraint mengikuti type, dipisah spasi, urutan bebas.
 Menandai field sebagai primary key. Hanya satu field per model yang boleh punya constraint `pk`.
 
 ```javascript
-category_id: 'uuid pk'
+category_id: 'string:36 pk'
 ```
 
 Untuk composite primary key, gunakan property `primaryKey` di level options (lihat halaman [`composite-primary-key.md`](./composite-primary-key.md)).
@@ -77,17 +78,25 @@ fields: {
 }
 ```
 
-## Constraint `fk:TABLE.COLUMN`
+## Foreign Key
 
-Mendeklarasikan foreign key dengan referensi ke kolom tabel lain.
+Field foreign key ditulis sebagai kolom biasa dengan tipe yang sama seperti kolom yang dirujuk. Kolom UUID, baik primary key maupun foreign key yang merujuknya, memakai `string:36`. Relasinya dideklarasikan di property `relations` dengan tipe `belongsTo`.
 
 ```javascript
 fields: {
-  category_id: 'uuid fk:category.category_id notnull'
+  category_id: 'string:36 notnull'
+},
+relations: {
+  category: {
+    type: 'belongsTo',
+    localKey: 'category_id',
+    references: 'category_id',
+    onDelete: 'restrict'
+  }
 }
 ```
 
-Untuk konfigurasi advanced (ON DELETE), gunakan property `relations` di level options (lihat halaman [`foreign-keys.md`](./foreign-keys.md)).
+Properti `relations` selengkapnya ada di halaman [`foreign-keys.md`](./foreign-keys.md). Parser masih menerima shorthand `fk:TABLE.COLUMN` di field agar schema lama tetap terbaca, tetapi shorthand ini tidak dipakai untuk tabel baru.
 
 ## Constraint `index`
 
@@ -157,8 +166,8 @@ Generator akan otomatis menghasilkan index untuk:
 | Sumber | Behavior |
 |--------|----------|
 | Field dengan `pk` | Index dibuat secara implisit oleh DDL constraint primary key (semua dialect) |
-| Field dengan `fk:` shorthand | Index eksplisit dibuat dengan nama `idx_<table>_<column>` |
 | Field di `relations[*].localKey` (belongsTo) | Index eksplisit dibuat dengan nama `idx_<table>_<column>` |
+| Field dengan shorthand `fk:` (schema lama) | Index eksplisit dibuat dengan nama `idx_<table>_<column>` |
 
 PostgreSQL dan Oracle tidak otomatis menghasilkan index untuk foreign key column, sehingga index eksplisit dari generator dibutuhkan. MySQL otomatis menghasilkan index untuk FK, namun generator tetap menulis DDL eksplisit untuk konsistensi lintas dialect.
 
@@ -171,7 +180,7 @@ Bila user mendeklarasikan field di `indexes` array tetapi kolom tersebut sudah p
 | Field dengan constraint `unique` (single column) | UNIQUE constraint sudah menghasilkan index di semua dialect |
 | Field dengan constraint `pk` | PRIMARY KEY constraint sudah menghasilkan index di semua dialect |
 | Field di `uniques` (composite) | Composite UNIQUE constraint sudah menghasilkan index di semua dialect |
-| Field dengan `fk:` shorthand atau di `relations[*].localKey` | Auto-emit dari aturan FK auto-index di atas |
+| Field di `relations[*].localKey` atau dengan shorthand `fk:` (schema lama) | Auto-emit dari aturan FK auto-index di atas |
 
 **Contoh:**
 

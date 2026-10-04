@@ -14,7 +14,7 @@ Tipe bersifat logical, bukan physical. DDL generator akan memetakan ke tipe SQL 
 | `time` | tidak ada | Jam tanpa tanggal, tidak dipengaruhi zona. Tidak didukung dialect Oracle, detail di bagian [Tipe `time`](#tipe-time) |
 | `timestamp` | tidak ada | Tanggal-waktu tanpa zona, disimpan sebagai wall-clock zona aplikasi (lihat konfigurasi `TIMEZONE` di [`rdf/datetime-fields.md`](../rdf/datetime-fields.md#konfigurasi-zona-dan-format)) |
 | `timestamptz` | tidak ada | Momen absolut dengan zona. Hanya didukung dialect PostgreSQL, detail di bagian [Tipe `timestamptz`](#tipe-timestamptz) |
-| `uuid` | tidak ada | Universally unique identifier |
+| `uuid` | tidak ada | Universally unique identifier. Tidak dipakai untuk tabel baru karena kolom UUID, termasuk primary key dan foreign key, ditulis `string:36`. Tipe ini muncul pada schema hasil introspect database yang sudah punya kolom UUID native |
 | `json` | tidak ada | Struktur data JSON |
 | `geom:Type,SRID` | Type dan SRID sama-sama opsional (default `Point,4326`) | Tipe data spasial (PostGIS geometry). Hanya didukung dialect PostgreSQL, detail di bagian [Tipe `geom` (PostGIS)](#tipe-geom-postgis) |
 
@@ -31,7 +31,7 @@ fields: {
   shift_start:    'time',
   created_at:     'timestamp',
   clockin:        'timestamptz',
-  product_id:     'uuid',
+  product_id:     'string:36',
   metadata:       'json',
   location:       'geom:Point,4326'
 }

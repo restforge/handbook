@@ -97,7 +97,7 @@ defineModel(tableName, options)
 | Definisi Composite Unique | [`composite-unique.md`](./composite-unique.md) |
 | Definisi CHECK Constraint | [`check-constraints.md`](./check-constraints.md) |
 | Definisi Composite Primary Key | [`composite-primary-key.md`](./composite-primary-key.md) |
-| Definisi Foreign Key Lanjutan | [`foreign-keys.md`](./foreign-keys.md) |
+| Definisi Foreign Key | [`foreign-keys.md`](./foreign-keys.md) |
 | Definisi Soft-Delete | [`soft-delete.md`](./soft-delete.md) |
 | Kebijakan Inverse Relation | [`relations.md`](./relations.md) |
 | Schema Namespace (Multi-Schema) | [`multi-schema.md`](./multi-schema.md) |

@@ -19,7 +19,7 @@ DDL hasil migrasi **tidak terpengaruh** oleh ada atau tidaknya deklarasi `hasOne
 ```javascript
 module.exports = ({ defineModel }) => defineModel('supplier', {
   fields: {
-    supplier_id:   'uuid pk',
+    supplier_id:   'string:36 pk',
     supplier_name: 'string:255 notnull'
   }
   // tidak ada relations
@@ -27,8 +27,8 @@ module.exports = ({ defineModel }) => defineModel('supplier', {
 
 module.exports = ({ defineModel }) => defineModel('stock_inbound', {
   fields: {
-    stock_inbound_id: 'uuid pk',
-    supplier_id:      'uuid'
+    stock_inbound_id: 'string:36 pk',
+    supplier_id:      'string:36'
   },
   relations: {
     supplier: {
@@ -46,7 +46,7 @@ module.exports = ({ defineModel }) => defineModel('stock_inbound', {
 ```javascript
 module.exports = ({ defineModel }) => defineModel('supplier', {
   fields: {
-    supplier_id:   'uuid pk',
+    supplier_id:   'string:36 pk',
     supplier_name: 'string:255 notnull'
   },
   relations: {
@@ -61,8 +61,8 @@ module.exports = ({ defineModel }) => defineModel('supplier', {
 
 module.exports = ({ defineModel }) => defineModel('stock_inbound', {
   fields: {
-    stock_inbound_id: 'uuid pk',
-    supplier_id:      'uuid'
+    stock_inbound_id: 'string:36 pk',
+    supplier_id:      'string:36'
   },
   relations: {
     supplier: {

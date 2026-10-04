@@ -6,7 +6,7 @@ Untuk database yang mendukung multi-schema (PostgreSQL, Oracle, SQL Server), pro
 module.exports = ({ defineModel }) => defineModel('products', {
   schema: 'inventory',
   fields: {
-    product_id:   'uuid pk',
+    product_id:   'string:36 pk',
     product_code: 'string:20 unique notnull',
     product_name: 'string:255 notnull'
   }
@@ -29,8 +29,8 @@ Aturan:
 module.exports = ({ defineModel }) => defineModel('order_item', {
   schema: 'sales',
   fields: {
-    order_item_id: 'uuid pk',
-    product_id:    'uuid notnull'
+    order_item_id: 'string:36 pk',
+    product_id:    'string:36 notnull'
   },
   relations: {
     product: {

@@ -20,8 +20,8 @@
     "fieldValidation": [
         {
             "name": "category_id",
-            "type": "uuid",
-            "constraints": { "primaryKey": true, "autoGenerate": true }
+            "type": "string",
+            "constraints": { "primaryKey": true, "autoGenerate": true, "required": true, "maxLength": 36 }
         },
         {
             "name": "category_code",
@@ -89,11 +89,11 @@
         "lookup": { "is_active": true }
     },
     "fieldValidation": [
-        { "name": "item_product_id", "type": "uuid",    "constraints": { "primaryKey": true, "autoGenerate": true } },
+        { "name": "item_product_id", "type": "string",  "constraints": { "primaryKey": true, "autoGenerate": true, "required": true, "maxLength": 36 } },
         { "name": "product_code",    "type": "string",  "constraints": { "required": true, "maxLength": 20, "unique": true } },
         { "name": "sku",             "type": "string",  "constraints": { "required": true, "maxLength": 20, "unique": true } },
         { "name": "product_name",    "type": "string",  "constraints": { "required": true, "maxLength": 100 } },
-        { "name": "category_id",     "type": "uuid",    "constraints": { "required": true } },
+        { "name": "category_id",     "type": "string",  "constraints": { "required": true, "maxLength": 36 } },
         { "name": "purchase_price",  "type": "decimal", "constraints": { "min": 0, "precision": 2 } },
         { "name": "selling_price",   "type": "decimal", "constraints": { "min": 0, "precision": 2 } },
         { "name": "stock",           "type": "decimal", "constraints": { "min": 0 } },
@@ -140,11 +140,11 @@ Kolom `category_name` pada contoh ini berasal dari JOIN di `viewQuery` dan `data
         "inbound_date": { "type": "date" }
     },
     "fieldValidation": [
-        { "name": "stock_inbound_id", "type": "uuid",    "constraints": { "primaryKey": true, "autoGenerate": true } },
+        { "name": "stock_inbound_id", "type": "string",  "constraints": { "primaryKey": true, "autoGenerate": true, "required": true, "maxLength": 36 } },
         { "name": "inbound_number",   "type": "string",  "constraints": { "required": true, "unique": true, "maxLength": 50 } },
         { "name": "inbound_date",     "type": "date",    "constraints": { "required": true } },
-        { "name": "warehouse_id",     "type": "uuid",    "constraints": { "required": true } },
-        { "name": "supplier_id",      "type": "uuid",    "constraints": { "required": true } },
+        { "name": "warehouse_id",     "type": "string",  "constraints": { "required": true, "maxLength": 36 } },
+        { "name": "supplier_id",      "type": "string",  "constraints": { "required": true, "maxLength": 36 } },
         { "name": "status",           "type": "string",  "constraints": { "required": true, "enum": ["draft", "confirmed", "closed", "cancelled"], "default": "draft" } }
     ],
     "action": {

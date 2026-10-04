@@ -20,7 +20,7 @@ Aturan format string shorthand:
 
 ```javascript
 fields: {
-  category_id:   'uuid pk',
+  category_id:   'string:36 pk',
   category_code: 'string:20 unique notnull',
   description:   'string:500',
   is_active:     'boolean default:true',
