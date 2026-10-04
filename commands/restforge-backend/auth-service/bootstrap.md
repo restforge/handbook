@@ -27,7 +27,7 @@ npx restforge auth-service bootstrap [OPTIONS]
 3. Membuat tabel layanan auth dari definisi schema di `schema/auth/`.
 4. Memasukkan data awal: aplikasi SYSTEM, action type, permission, role, dan user `superadmin`.
 5. Membuat endpoint dan processor layanan auth dengan nama project `auth-service`.
-6. Mengganti password `superadmin` dan `app_secret` aplikasi SYSTEM dengan nilai acak, lalu menampilkannya satu kali.
+6. Mengganti password `superadmin` dan `app_secret` aplikasi SYSTEM dengan nilai acak, menampilkannya di output, lalu menyimpannya ke file kredensial.
 
 Langkah 3 sampai 5 berhenti pada kegagalan pertama dan menampilkan langkah yang gagal.
 
@@ -41,9 +41,11 @@ Langkah 3 sampai 5 berhenti pada kegagalan pertama dan menampilkan langkah yang 
 
 `--reset` hanya menyentuh schema `auth`. Tabel dan data aplikasi di schema lain, termasuk `public`, tidak berubah.
 
-## Password yang Ditampilkan
+## File Kredensial
 
-Password `superadmin` dan `app_secret` aplikasi SYSTEM muncul satu kali di akhir output dan tidak disimpan di tempat lain. Simpan keduanya saat itu juga. Bila hilang, jalankan `bootstrap --reset`.
+Password `superadmin` dan `app_secret` aplikasi SYSTEM muncul di akhir output. Keduanya juga ditulis sebagai teks polos ke `data-storage/credential/auth-service-superadmin.txt` di folder project. File itu ditimpa setiap kali `bootstrap` membuat kredensial baru.
+
+Pindahkan kredensial ke tempat yang aman, lalu hapus file tersebut. Folder `data-storage/credential/` berisi file `.gitignore` sehingga file kredensial tidak ikut ter-commit. Bila kredensial hilang, jalankan `bootstrap --reset`.
 
 ## Contoh
 
@@ -60,11 +62,13 @@ npx restforge auth-service bootstrap --reset
 ================================================================
   auth-service bootstrap complete
 
-  The values below are shown ONCE and are not stored anywhere.
-  Save them now.
-
+  superadmin username : superadmin
   superadmin password : <password acak>
   SYSTEM app_secret   : <secret acak>
+
+  Saved to: data-storage/credential/auth-service-superadmin.txt
+  WARNING: this file contains the credentials in plain text.
+  Store the credentials in a secure place, then delete the file.
 ================================================================
 
 Next step:

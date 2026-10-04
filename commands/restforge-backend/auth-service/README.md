@@ -63,7 +63,7 @@ cd /d D:\projects\myapp
 npx restforge auth-service bootstrap
 ```
 
-`bootstrap` menampilkan password `superadmin` dan `app_secret` aplikasi SYSTEM satu kali. Simpan keduanya saat itu juga. Detail ada di [`bootstrap.md`](./bootstrap.md).
+`bootstrap` menampilkan password `superadmin` dan `app_secret` aplikasi SYSTEM, lalu menyimpannya ke `data-storage/credential/auth-service-superadmin.txt`. Pindahkan keduanya ke tempat yang aman, lalu hapus file tersebut. Detail ada di [`bootstrap.md`](./bootstrap.md).
 
 ### 3. Menjalankan layanan auth
 
@@ -117,7 +117,7 @@ cd /d D:\projects\myapp
 npx restforge auth-service provision --manifest=config/auth-manifest.json
 ```
 
-`provision` menampilkan password owner satu kali bila passwordnya dibuat acak. Detail ada di [`provision.md`](./provision.md).
+Bila password owner dibuat acak, `provision` menampilkannya dan menyimpannya ke `data-storage/credential/<app code huruf kecil>-owner.txt`. Pindahkan password ke tempat yang aman, lalu hapus file tersebut. Detail ada di [`provision.md`](./provision.md).
 
 ### 9. Membuat payload frontend
 

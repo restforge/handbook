@@ -16,7 +16,7 @@ npx restforge auth-service provision --manifest=<FILE> [OPTIONS]
 | `--auth-config <FILE>` | Tidak | `auth.env` | File env layanan auth, sumber koneksi database |
 | `--owner-email <EMAIL>` | Tidak | `<owner-username>@<app code huruf kecil>.local` | Email user owner |
 | `--owner-username <NAME>` | Tidak | `<app code huruf kecil>-owner` | Username user owner |
-| `--owner-password <PASSWORD>` | Tidak | acak | Password user owner. Bila tidak diisi, password acak dibuat dan ditampilkan satu kali |
+| `--owner-password <PASSWORD>` | Tidak | acak | Password user owner. Bila tidak diisi, password acak dibuat, ditampilkan, dan disimpan ke file kredensial |
 | `--dry-run` | Tidak | `false` | Menampilkan rencana tanpa menulis ke database |
 
 ## Prasyarat
@@ -44,7 +44,9 @@ Username owner memakai app code dalam huruf kecil. Untuk app code `MYAPP`, usern
 
 Password owner yang sudah ada tidak pernah ditimpa. Bila user owner sudah terdaftar, `provision` melewatinya dan `--owner-password` diabaikan. Output menampilkan `owner user already exists, password left untouched`.
 
-Bila user owner baru dibuat tanpa `--owner-password`, password acak muncul satu kali di output dan tidak disimpan dalam bentuk asli. Simpan password itu saat muncul.
+Bila user owner baru dibuat tanpa `--owner-password`, password acak muncul di output. Password itu juga ditulis sebagai teks polos ke `data-storage/credential/<app code huruf kecil>-owner.txt`, misalnya `myapp-owner.txt`, bersama app code, username, dan email owner. File yang sudah ada ditimpa.
+
+Pindahkan password ke tempat yang aman, lalu hapus file tersebut. Folder `data-storage/credential/` berisi file `.gitignore` sehingga file kredensial tidak ikut ter-commit. File tidak dibuat bila password diberikan lewat `--owner-password`, bila user owner sudah ada, atau saat `--dry-run`.
 
 ## Dry Run
 
@@ -71,9 +73,12 @@ Owner user:  created (myapp-owner <myapp-owner@myapp.local>)
 Owner role:  assigned OWNER
 
 ============================================================
-  GENERATED OWNER PASSWORD (shown once - store it now):
+  GENERATED OWNER PASSWORD:
     username: myapp-owner
     password: <password acak>
+  Saved to: data-storage/credential/myapp-owner.txt
+  WARNING: this file contains the password in plain text.
+  Store the password in a secure place, then delete the file.
 ============================================================
 
 Login check: POST /api/auth-service/session/login
