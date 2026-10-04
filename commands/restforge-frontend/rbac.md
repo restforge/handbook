@@ -38,13 +38,29 @@ File yang ditulis:
 
 | File | Fungsi |
 |------|--------|
-| `rbac-users.html` | Daftar user, tambah dan ubah user beserta role-nya |
+| `rbac-users.html` | Daftar user, tampilan lihat user, serta tambah dan ubah user beserta role-nya |
 | `rbac-roles.html` | Daftar role dan detail role |
 | `rbac-role-permissions.html` | Matriks permission per role |
 | `js/rbac-users.js`, `js/rbac-roles.js`, `js/rbac-role-permissions.js` | Logika masing-masing halaman |
 | `js/permission-grouping.js` | Pengelompokan permission untuk matriks |
 
 File yang sudah ada dilewati. Dengan `--overwrite`, file lama diarsipkan lalu ditimpa.
+
+### Halaman Users
+
+Halaman `rbac-users.html` menampilkan daftar user beserta role yang dipegang setiap user. Kolom Roles berisi nama role, bukan kode role, dengan satu badge per role yang diurutkan menurut nama. User tanpa role menampilkan `-`.
+
+Isi satu user bisa dilihat tanpa membuka form Edit. Klik nama user di kolom User, atau pilih `View` di menu Actions. Keduanya membuka modal View User yang menampilkan setiap field sebagai pasangan label dan nilai teks, mulai dari Username sampai Last Login. Field yang kosong bertuliskan `Not provided`, sedangkan password tidak pernah ditampilkan. Modal ditutup lewat tombol `Close`, ikon silang, atau tombol Escape.
+
+Checkbox Roles pada modal Add User dan Edit User juga hanya memuat nama role, misalnya `Staff Gudang`.
+
+Kolom Roles membaca nama role dari endpoint `user` layanan auth. Layanan auth yang dipasang sebelum fitur ini menampilkan `-` di kolom tersebut sampai definisi endpoint `user` diperbarui. Jalankan [`init --force`](../restforge-backend/auth-service/init.md#menjalankan-ulang-dengan---force) dengan flag yang sama seperti pemasangan awal, lalu buat ulang endpoint tersebut:
+
+```bat
+npx restforge endpoint create --project=auth-service --name=user --payload=auth_user.json --config=auth.env --database=postgres --force
+```
+
+Halaman Users yang dibuat sebelum fitur ini belum punya modal View User. Jalankan `rbac --create --overwrite` agar halaman memakai versi baru.
 
 ### Matriks Assign Permissions
 
