@@ -114,7 +114,7 @@ Permission manifest (config/auth-manifest.json), appCode MYAPP:
 
 Manifest written: config/auth-manifest.json
 Manual actions (e.g. PRINT, APPROVE), categories, category, sortOrder, and description can be added to the file; they are kept on the next run.
-Next: npx restforge auth-service provision --manifest=config/auth-manifest.json
+Next: npx restforge auth-service provision --manifest=config/auth-manifest.json --owner-email=<owner email>
 ```
 
 Bila isi manifest tidak berubah, output menampilkan `Manifest unchanged`.

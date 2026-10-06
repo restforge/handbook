@@ -114,10 +114,10 @@ Detail ada di [`manifest.md`](./manifest.md).
 
 ```bat
 cd /d D:\projects\myapp
-npx restforge auth-service provision --manifest=config/auth-manifest.json
+npx restforge auth-service provision --manifest=config/auth-manifest.json --owner-email=owner@myapp.com
 ```
 
-Bila password owner dibuat acak, `provision` menampilkannya dan menyimpannya ke `data-storage/credential/<app code huruf kecil>-owner.txt`. Pindahkan password ke tempat yang aman, lalu hapus file tersebut. Detail ada di [`provision.md`](./provision.md).
+`--owner-email` wajib diisi dengan alamat yang bisa menerima email. Owner baru menerima email notifikasi di alamat ini lewat SMTP yang diatur di [Pengiriman Email](./init.md#pengiriman-email). Bila password owner dibuat acak, `provision` menampilkannya dan menyimpannya ke `data-storage/credential/<app code huruf kecil>-owner.txt`. Pindahkan password ke tempat yang aman, lalu hapus file tersebut. Detail ada di [`provision.md`](./provision.md).
 
 ### 9. Membuat payload frontend
 
@@ -152,7 +152,7 @@ Alur auth-service berakhir di `generate`. [`auth --attach`](../../restforge-fron
 
 ### Setelah Urutan Selesai
 
-Jalankan aplikasi dengan `npx restforge serve --project=myapp --config=db-connection.env`, lalu buka halaman login frontend. User owner login dengan app code `MYAPP`, username hasil `provision` (misalnya `myapp-owner`), dan password yang ditampilkan `provision`.
+Jalankan aplikasi dengan `npx restforge serve --project=myapp --config=db-connection.env`, lalu buka halaman login frontend. User owner login dengan app code `MYAPP`, username hasil `provision` (misalnya `myapp-owner`), dan password yang ditampilkan `provision`. Halaman login juga menampilkan link Forgot password?, yang mengirim link reset ke email akun dan membuka halaman `reset-password.html` untuk menyimpan password baru.
 
 ## Struktur Folder
 

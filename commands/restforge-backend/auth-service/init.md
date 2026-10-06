@@ -29,7 +29,7 @@ npx restforge auth-service init [OPTIONS]
 
 1. Memeriksa dialect database dari `--app-config`. Dialect selain PostgreSQL ditolak sebelum file apa pun ditulis.
 2. Menyalin definisi schema, definisi endpoint, query, data awal, komponen, plugin, view, dan handler processor layanan auth ke folder project. File yang sudah ada dilewati.
-3. Membuat `config/<--config>` berisi `DB_*` dan `LICENSE` dari env aplikasi, `SERVER_PORT`, dan kunci JWT.
+3. Membuat `config/<--config>` berisi `DB_*` dan `LICENSE` dari env aplikasi, `SERVER_PORT`, kunci JWT, `APP_BASE_URL`, dan nilai contoh SMTP.
 4. Mencatat `nodemailer` dan `ejs` sebagai dependency di `package.json` project.
 
 Kunci JWT bergantung pada `--jwt-algorithm`. Mode `HS256` membuat `JWT_SECRET` acak. Mode `RS256` membuat keypair RSA di `config/keys/` dan mengisi path private dan public key di file env.
@@ -41,6 +41,19 @@ Daftar file yang disalin ada di [Struktur Folder](./README.md#struktur-folder).
 Tanpa `--force`, `init` kedua melewati semua file yang sudah ada. Dengan `--force`, file yang sudah ada diarsipkan ke `.restforge/archive/` lalu ditimpa, sehingga perubahan lokal pada file layanan auth tetap bisa dipulihkan dari arsip.
 
 Kunci JWT yang sudah ada dipertahankan. `JWT_SECRET` (atau keypair RS256) tidak dibuat ulang, sehingga token yang sudah terbit dan aplikasi yang sudah di-`link` tetap valid. Output menampilkan baris `Existing JWT key preserved`.
+
+## Pengiriman Email
+
+Layanan auth mengirim email reset password, verifikasi email, dan notifikasi owner dari [`provision`](./provision.md#email-notifikasi-owner) lewat SMTP. Pengaturannya ada di file env layanan auth.
+
+| Key | Keterangan |
+|-----|-----------|
+| `APP_BASE_URL` | Alamat folder frontend yang berisi `login.html`, tanpa garis miring di akhir. Link di email dimulai dengan nilai ini, misalnya `http://localhost:8000/reset-password.html?token=...`. Default `http://localhost:8000` |
+| `SMTP_HOST`, `SMTP_PORT` | Server SMTP dan port-nya. Port 465 memakai SSL |
+| `SMTP_USER`, `SMTP_PASSWORD` | Akun login ke server SMTP |
+| `SMTP_FROM` | Alamat pengirim, misalnya `MYAPP <noreply@myapp.com>` |
+
+`init` menulis key SMTP dengan nilai contoh seperti `smtp.example.com`. Selama nilai contoh itu belum diganti, email tidak terkirim. Halaman forgot password tetap menampilkan pesan yang sama, sedangkan `provision` menampilkan peringatan. Perubahan file env baru berlaku setelah layanan auth dijalankan ulang.
 
 ## Contoh
 
