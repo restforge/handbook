@@ -12,7 +12,7 @@ npx restforge auth-service init [OPTIONS]
 
 | Flag | Wajib | Default | Keterangan |
 |------|-------|---------|-----------|
-| `--app-config <FILE>` | Tidak | `db-connection.env` | File env aplikasi, sumber nilai `DB_*` dan `LICENSE` |
+| `--app-config <FILE>` | Tidak | `db-connection.env` | File env aplikasi, sumber nilai `DB_*`, `LICENSE`, `TIMEZONE`, `DATEFORMAT`, dan `DATETIMEFORMAT` |
 | `--config <FILE>` | Tidak | `auth.env` | File env layanan auth yang dibuat di folder `config/` |
 | `--port <N>` | Tidak | `3100` | `SERVER_PORT` layanan auth |
 | `--jwt-algorithm <ALG>` | Tidak | `HS256` | `HS256` atau `RS256`. `RS256` membuat keypair di `config/keys/` |
@@ -29,10 +29,12 @@ npx restforge auth-service init [OPTIONS]
 
 1. Memeriksa dialect database dari `--app-config`. Dialect selain PostgreSQL ditolak sebelum file apa pun ditulis.
 2. Menyalin definisi schema, definisi endpoint, query, data awal, komponen, plugin, view, dan handler processor layanan auth ke folder project. File yang sudah ada dilewati.
-3. Membuat `config/<--config>` berisi `DB_*` dan `LICENSE` dari env aplikasi, `SERVER_PORT`, kunci JWT, `APP_BASE_URL`, dan nilai contoh SMTP.
+3. Membuat `config/<--config>` berisi `DB_*`, `LICENSE`, dan pengaturan tanggal/waktu dari env aplikasi, lalu `SERVER_PORT`, kunci JWT, `APP_BASE_URL`, dan nilai contoh SMTP.
 4. Mencatat `nodemailer` dan `ejs` sebagai dependency di `package.json` project.
 
 Kunci JWT bergantung pada `--jwt-algorithm`. Mode `HS256` membuat `JWT_SECRET` acak. Mode `RS256` membuat keypair RSA di `config/keys/` dan mengisi path private dan public key di file env.
+
+Pengaturan tanggal/waktu terdiri dari `TIMEZONE`, `DATEFORMAT`, dan `DATETIMEFORMAT`, dan nilainya disalin apa adanya dari env aplikasi. Layanan auth harus memakai zona waktu yang sama dengan aplikasi agar masa berlaku link reset password, verifikasi email, dan undangan dihitung dengan benar. Key yang tidak ada di env aplikasi ditulis kosong, sehingga layanan auth memakai default yang sama dengan aplikasi. Bila `TIMEZONE` aplikasi diubah kemudian, ubah juga nilai di file env layanan auth.
 
 Daftar file yang disalin ada di [Struktur Folder](./README.md#struktur-folder).
 
@@ -74,7 +76,7 @@ auth-service files:
   written: 75
 
 auth-service environment (config/auth.env):
-  written: DB_* and LICENSE copied from config/db-connection.env, SERVER_PORT=3100, JWT_ALGORITHM=HS256
+  written: DB_*, LICENSE, TIMEZONE, DATEFORMAT, and DATETIMEFORMAT copied from config/db-connection.env, SERVER_PORT=3100, JWT_ALGORITHM=HS256
   JWT_SECRET: generated (64 random bytes)
 
 Runtime dependencies (nodemailer, ejs):
