@@ -93,6 +93,19 @@ Scope `form` berguna untuk:
 | `{pageId}.html` | Halaman CRUD atau dashboard |
 | `js/{pageId}.js` | Logic CRUD: DataTables init, save/load/delete, validasi |
 
+### Halaman Registrasi Plugin `vanilla-js-auth`
+
+Plugin `vanilla-js-auth` menulis halaman registrasi publik bersama halaman login. Keempat file berikut dibuka tanpa login, sehingga tidak memuat `js/common.js`.
+
+| File | Fungsi |
+|------|--------|
+| `register.html` | Form pendaftaran dengan Full Name, Email Address, dan WhatsApp Number |
+| `js/register.js` | Logika form register dan pembacaan status registrasi |
+| `set-password.html` | Halaman penetapan password dari link di email aktivasi |
+| `js/set-password.js` | Logika halaman set password |
+
+Link Create one di `login.html` hanya tampil saat registrasi terbuka. Halaman login membaca status registrasi dari layanan auth, dan registrasi dibuka lewat [`auth-service provision --allow-self-register`](../restforge-backend/auth-service/provision.md#registrasi-publik). Saat registrasi tertutup, link tersembunyi dan `register.html` hanya menampilkan `Registration is currently closed.` beserta link ke halaman login. Alur lengkapnya ada di [Registrasi Publik](../restforge-backend/auth-service/README.md#registrasi-publik).
+
 ### Plugin Assets
 
 File vendor (jQuery, Select2, Flatpickr, Bootstrap, dll.) di-copy dari plugin ke folder output. Persisnya bervariasi per plugin.

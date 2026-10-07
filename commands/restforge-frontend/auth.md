@@ -87,8 +87,9 @@ Retrofit bekerja dalam dua lapisan sesuai kondisi project:
 2. **Artefak login plugin (bila aktif)** — bila payload UDF project memuat blok
    `auth` dan plugin-nya `vanilla-js-auth` atau `vanilla-js-custom`, render juga
    `js/auth.js`, `login.html`, dan `js/login.js` versi plugin (untuk
-   `vanilla-js-auth` juga `forgot-password.html`, `reset-password.html`, dan
-   script-nya), lalu injeksikan
+   `vanilla-js-auth` juga `forgot-password.html`, `reset-password.html`,
+   `register.html`, `set-password.html`, dan script-nya, yaitu `js/forgot-password.js`,
+   `js/reset-password.js`, `js/register.js`, dan `js/set-password.js`), lalu injeksikan
    blok `appCode`/`authBaseUrl` ke `js/config.js` secara idempoten (file config
    yang sudah ada tidak ditimpa, hanya ditambah blok bertanda marker). Pada mode
    ini `login.html`/`signup.html` versi `rfx_auth` tidak ditulis; login memakai

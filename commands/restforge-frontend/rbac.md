@@ -62,6 +62,19 @@ npx restforge endpoint create --project=auth-service --name=user --payload=auth_
 
 Halaman Users yang dibuat sebelum fitur ini belum punya modal View User. Jalankan `rbac --create --overwrite` agar halaman memakai versi baru.
 
+### Role Sistem dan Role Tenant
+
+Setiap owner memegang satu tenant, yaitu kelompok user dan role yang terpisah dari kelompok lain di aplikasi yang sama. Pendaftar dari [registrasi publik](../restforge-backend/auth-service/README.md#registrasi-publik) otomatis menjadi owner tenant barunya, dan editor RBAC menyesuaikan tampilan dengan tenant itu.
+
+- Role bawaan sistem seperti `OWNER` tampil berbadge System di halaman Roles. Bagi owner, role ini read-only: tidak bisa diubah, tidak bisa dihapus, dan permission-nya tidak bisa diubah. Menu di barisnya hanya berisi View dan Assign Permissions, dan matriks permission tampil tanpa checkbox yang bisa diubah.
+- Role yang dibuat owner, misalnya `STAFF`, berbadge Custom dan hanya terlihat di tenant pembuatnya.
+- Halaman Users hanya menampilkan user dari tenant owner yang login.
+- Pilihan role di modal Add User dan Edit User memuat `OWNER` dan role milik tenant itu.
+
+`SUPER_ADMIN` tetap bisa mengubah role sistem.
+
+Halaman RBAC yang dibuat sebelum fitur ini perlu dibuat ulang dengan `rbac --create --overwrite`, lalu `generate`, agar memakai versi baru.
+
 ### Matriks Assign Permissions
 
 Halaman `rbac-role-permissions.html` menampilkan satu baris per resource dan satu kolom per aksi. Description resource tampil di samping kode resource dengan warna dan ukuran huruf yang sama. Resource tanpa description membiarkan area itu kosong.

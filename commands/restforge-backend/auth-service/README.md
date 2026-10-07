@@ -33,6 +33,8 @@ Editor RBAC di frontend dibuat oleh perintah designer [`rbac --create`](../../re
 
 Satu project aplikasi memakai salah satu. `auth-service link` menolak project yang sudah memasang `project auth`.
 
+`auth-service` juga mendukung registrasi publik dengan tenant per pendaftar, seperti dijelaskan di [Registrasi Publik](#registrasi-publik). Isolasi data bisnis per tenant dilakukan dengan `project tenant --activate`.
+
 ## Prasyarat
 
 - Database aplikasi berupa PostgreSQL. Dialect lain ditolak sebelum file apa pun ditulis.
@@ -153,6 +155,29 @@ Alur auth-service berakhir di `generate`. [`auth --attach`](../../restforge-fron
 ### Setelah Urutan Selesai
 
 Jalankan aplikasi dengan `npx restforge serve --project=myapp --config=db-connection.env`, lalu buka halaman login frontend. User owner login dengan app code `MYAPP`, username hasil `provision` (misalnya `myapp-owner`), dan password yang ditampilkan `provision`. Halaman login juga menampilkan link Forgot password?, yang mengirim link reset ke email akun dan membuka halaman `reset-password.html` untuk menyimpan password baru.
+
+## Registrasi Publik
+
+Pada pengaturan default, user hanya dibuat oleh owner lewat editor RBAC. Registrasi publik membiarkan calon pengguna mendaftar sendiri, dan setiap pendaftar menjadi owner dari tenant miliknya. Tenant adalah satu kelompok user dan role yang terpisah dari kelompok lain di aplikasi yang sama.
+
+Registrasi dibuka dengan menjalankan [`provision`](./provision.md) memakai flag `--allow-self-register`. Registrasi baru berjalan bila SMTP dan `APP_BASE_URL` di `config/auth.env` sudah diisi, seperti di [Pengiriman Email](./init.md#pengiriman-email). Tanpa flag, registrasi tertutup, termasuk saat `provision` dijalankan ulang tanpa flag.
+
+```bat
+cd /d D:\projects\myapp
+npx restforge auth-service provision --manifest=config/auth-manifest.json ^
+  --owner-email=owner@myapp.com --allow-self-register
+```
+
+Frontend hasil [`generate`](../../restforge-frontend/generate.md) dengan plugin `vanilla-js-auth` memuat halaman `register.html` dan `set-password.html`. Link Create one di halaman login hanya tampil saat registrasi terbuka.
+
+Alur pendaftar berjalan dalam empat langkah.
+
+1. Pendaftar mengisi nama, email, dan nomor WhatsApp (opsional) di halaman register.
+2. Layanan auth membuat tenant, user, dan role `OWNER` untuk pendaftar, lalu mengirim email aktivasi.
+3. Pendaftar membuka link di email, lalu menetapkan password di halaman set password.
+4. Pendaftar login dengan app code, email sebagai username, dan password baru.
+
+Registrasi hanya memisahkan user dan role per tenant. Data bisnis aplikasi, seperti tabel `item`, baru terpisah per tenant setelah `project tenant --activate` dijalankan. Perilaku tampilan editor RBAC untuk owner tenant dijelaskan di [`rbac`](../../restforge-frontend/rbac.md).
 
 ## Struktur Folder
 

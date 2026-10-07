@@ -17,6 +17,7 @@ npx restforge auth-service provision --manifest=<FILE> --owner-email=<EMAIL> [OP
 | `--owner-email <EMAIL>` | Ya | - | Email user owner. Owner menerima email notifikasi di alamat ini dan memakainya untuk forgot password |
 | `--owner-username <NAME>` | Tidak | `<app code huruf kecil>-owner` | Username user owner |
 | `--owner-password <PASSWORD>` | Tidak | acak | Password user owner. Bila tidak diisi, password acak dibuat, ditampilkan, dan disimpan ke file kredensial |
+| `--allow-self-register` | Tidak | `false` | Membuka registrasi publik untuk aplikasi. Tanpa flag ini registrasi ditutup, termasuk saat `provision` dijalankan ulang untuk aplikasi yang sudah ada |
 | `--dry-run` | Tidak | `false` | Menampilkan rencana tanpa menulis ke database |
 
 ## Prasyarat
@@ -32,12 +33,23 @@ npx restforge auth-service provision --manifest=<FILE> --owner-email=<EMAIL> [OP
 2. Mendaftarkan satu permission untuk setiap pasangan resource dan aksi, lengkap dengan kategori, urutan, dan description aksi dari manifest.
 3. Menyimpan description setiap resource, terpisah dari permission.
 4. Membuat role `OWNER` dan memberinya seluruh permission aplikasi.
-5. Membuat user owner dan memberinya role `OWNER`.
-6. Mengirim email notifikasi ke owner yang baru dibuat.
+5. Menyiapkan tenant `DEFAULT` untuk aplikasi, lalu mengikat user owner ke tenant itu.
+6. Membuat user owner dan memberinya role `OWNER`.
+7. Mengirim email notifikasi ke owner yang baru dibuat.
 
 Seluruh langkah idempoten. Menjalankan `provision` lagi hanya menambah yang belum ada, dan permission yang berubah di manifest diperbarui.
 
 Bila manifest memakai aksi yang belum terdaftar sebagai action type di database layanan auth, misalnya `PRINT` atau `CHANGE_STATUS` pada database yang di-bootstrap sebelum kedua aksi itu tersedia, `provision` menambahkannya lebih dulu. Output menampilkan baris `Action types: added PRINT, CHANGE_STATUS`. Action type menentukan urutan dan label kolom di halaman Assign Permissions.
+
+## Registrasi Publik
+
+Registrasi publik tertutup bila flag tidak diberikan. Flag `--allow-self-register` membukanya, sehingga calon pengguna dapat mendaftar sendiri lewat halaman `register.html` dan setiap pendaftar menjadi owner tenant miliknya sendiri. Registrasi baru berjalan bila SMTP di file env layanan auth sudah diisi, karena pendaftar menetapkan password lewat link di email aktivasi.
+
+Setiap `provision` menetapkan keadaan registrasi sesuai flag pada perintah itu. Menjalankan `provision` tanpa flag untuk aplikasi yang sebelumnya dibuka menutup registrasinya kembali, sehingga flag perlu diberikan lagi pada setiap eksekusi bila registrasi harus tetap terbuka. Hasilnya tercetak di output sebagai `Self-registration: enabled` atau `Self-registration: disabled`. Alur lengkapnya ada di [Registrasi Publik](./README.md#registrasi-publik).
+
+## Tenant DEFAULT
+
+Tenant adalah satu kelompok user dan role yang terpisah dari kelompok lain di aplikasi yang sama. `provision` menyiapkan tenant `DEFAULT` untuk aplikasi dan mengikat user owner ke tenant itu. Pada instalasi lama, user dan role non-sistem yang belum punya tenant ikut dimasukkan ke `DEFAULT`, sedangkan role `OWNER` tetap role sistem yang berlaku di semua tenant. Aplikasi `SYSTEM` tidak punya tenant.
 
 ## Description Resource dan Aksi
 
@@ -88,6 +100,8 @@ cd /d D:\projects\myapp
 npx restforge auth-service provision --manifest=config/auth-manifest.json --owner-email=owner@myapp.com
 npx restforge auth-service provision --manifest=config/auth-manifest.json --owner-email=owner@myapp.com --dry-run
 npx restforge auth-service provision --manifest=config/auth-manifest.json ^
+  --owner-email=owner@myapp.com --allow-self-register
+npx restforge auth-service provision --manifest=config/auth-manifest.json ^
   --owner-email=owner@myapp.com --owner-username=admin-myapp
 ```
 
@@ -99,6 +113,8 @@ App:         created
 Permissions: 4 created, 0 updated, 0 unchanged
 Resources:   1 created, 0 updated, 0 unchanged
 Role OWNER:  created - 4 new assignment(s)
+Tenant:      DEFAULT created
+Self-registration: disabled
 Owner user:  created (myapp-owner <owner@myapp.com>)
 Owner role:  assigned OWNER
 Owner email: notification sent to owner@myapp.com
