@@ -82,15 +82,15 @@ Grup yang ditambahkan ke UDF memuat dua item `link` dengan key `roles`:
   "label": "Administration",
   "icon": "shield-tick",
   "children": [
-    { "type": "link", "label": "Users", "href": "rbac-users.html", "roles": ["OWNER", "ADMIN", "SUPER_ADMIN"] },
-    { "type": "link", "label": "Roles", "href": "rbac-roles.html", "roles": ["OWNER", "ADMIN", "SUPER_ADMIN"] }
+    { "type": "link", "label": "Users", "href": "rbac-users.html", "roles": ["OWNER", "SUPER_ADMIN"] },
+    { "type": "link", "label": "Roles", "href": "rbac-roles.html", "roles": ["OWNER", "SUPER_ADMIN"] }
   ]
 }
 ```
 
-Menu Users dan Roles hanya tampil untuk user yang memegang salah satu role di `roles`. Grup yang seluruh isinya tersembunyi ikut tersembunyi. Detail key `roles` ada di [`catalogs/udf/navigation.md`](../../catalogs/udf/navigation.md#properti-roles-pada-item-link).
+Menu Users dan Roles hanya tampil untuk user yang memegang salah satu role di `roles`. Kedua role itu adalah role bawaan sistem. Role yang dibuat sendiri di halaman Roles tidak membuka menu ini, termasuk role yang diberi kode `ADMIN`. Hal yang sama berlaku di backend, sehingga hanya OWNER dan SUPER_ADMIN yang bisa mengelola user, role, dan permission. Grup yang seluruh isinya tersembunyi ikut tersembunyi. Detail key `roles` ada di [`catalogs/udf/navigation.md`](../../catalogs/udf/navigation.md#properti-roles-pada-item-link).
 
-Bila navigasi sudah memuat item dengan `href` `rbac-users.html` di tingkat mana pun, grup tidak ditambahkan lagi dan UDF tidak berubah. Bagian lain UDF, termasuk indentasi dan akhir baris, tetap seperti semula.
+Bila navigasi sudah memuat item dengan `href` `rbac-users.html` di tingkat mana pun, grup tidak ditambahkan lagi. Item Users dan Roles yang masih memakai `roles` bawaan versi lama, yaitu `["OWNER", "ADMIN", "SUPER_ADMIN"]`, diganti menjadi `["OWNER", "SUPER_ADMIN"]`. Nilai `roles` lain dianggap pilihan pengguna dan tidak diubah. Selain itu, UDF tidak berubah. Bagian lain UDF, termasuk indentasi dan akhir baris, tetap seperti semula.
 
 ### Posisi di Urutan
 

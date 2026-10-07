@@ -122,14 +122,14 @@ Item `link` boleh ditempatkan di tingkat mana pun, termasuk di dalam group. Menu
 
 #### Properti `roles` pada Item `link`
 
-`roles` membatasi menu berdasarkan role pengguna, misalnya untuk menu administrasi yang hanya boleh dilihat OWNER dan ADMIN.
+`roles` membatasi menu berdasarkan role pengguna, misalnya untuk menu administrasi yang hanya boleh dilihat OWNER dan SUPER_ADMIN.
 
 ```json
 {
     "type": "link",
     "label": "Users",
     "href": "rbac-users.html",
-    "roles": ["OWNER", "ADMIN", "SUPER_ADMIN"]
+    "roles": ["OWNER", "SUPER_ADMIN"]
 }
 ```
 
