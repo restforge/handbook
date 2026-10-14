@@ -1,0 +1,219 @@
+# `auth-service`
+
+> Menyiapkan layanan auth berbasis RBAC (role dan permission) untuk aplikasi RESTForge, lengkap dengan editor RBAC di frontend.
+
+`auth-service` memasang satu layanan auth terpisah ke folder project aplikasi. Layanan ini menerbitkan token login, menyimpan user, role, dan permission, lalu endpoint aplikasi memeriksa token tersebut lewat [`authGuard`](../../../catalogs/rdf/auth-guard.md). Lima perintah di resource ini menyiapkan layanan, menghubungkannya ke aplikasi, dan mendaftarkan permission aplikasi.
+
+## Pattern
+
+```
+npx restforge auth-service <verb> [--flag=value]
+```
+
+## Daftar Perintah
+
+| Verb | Tujuan | Halaman |
+|------|--------|---------|
+| `init` | Memasang file layanan auth ke folder project, tanpa menyentuh database | [`init.md`](./init.md) |
+| `bootstrap` | Membuat schema, tabel, dan data awal di database, lalu membuat modul layanan auth | [`bootstrap.md`](./bootstrap.md) |
+| `link` | Menghubungkan project aplikasi ke layanan auth dan memasang `authGuard` ke RDF | [`link.md`](./link.md) |
+| `manifest` | Menyusun ulang daftar permission dari RDF aplikasi secara manual | [`manifest.md`](./manifest.md) |
+| `provision` | Mendaftarkan aplikasi, permission, role OWNER, dan user owner ke layanan auth | [`provision.md`](./provision.md) |
+
+Editor RBAC di frontend dibuat oleh perintah designer [`rbac --create`](../../restforge-frontend/rbac.md).
+
+## Kapan Dipakai
+
+[`project auth`](../project/auth.md) cocok untuk aplikasi yang hanya membutuhkan login dan tidak membedakan hak akses per role. `auth-service` dipakai bila aplikasi membutuhkan role, permission per resource, dan editor untuk mengelolanya.
+
+| Kebutuhan | Pilihan |
+|-----------|---------|
+| Login dan register, setiap pengguna pemilik tenant sendiri | `project auth` |
+| Role, permission per resource dan aksi, serta editor RBAC | `auth-service` |
+
+Satu project aplikasi memakai salah satu. `auth-service link` menolak project yang sudah memasang `project auth`.
+
+`auth-service` juga mendukung registrasi publik dengan tenant per pendaftar, seperti dijelaskan di [Registrasi Publik](#registrasi-publik). Isolasi data bisnis per tenant dilakukan dengan [`project tenant --activate`](../project/tenant.md).
+
+## Prasyarat
+
+- Database aplikasi berupa PostgreSQL. Dialect lain ditolak sebelum file apa pun ditulis.
+- `@restforgejs/platform` terpasang lokal di folder project.
+- File config database aplikasi (misalnya `config/db-connection.env`) sudah berisi koneksi dan `LICENSE`.
+- Perintah yang tidak diberi `--config`, seperti `endpoint create` dan `payload migrate`, membaca config default. Jalankan [`config set-default`](../config/set-default.md) sekali per folder project.
+- Layanan auth berjalan di port `3100` secara default. Bila port itu sudah dipakai proses lain, pilih port lain lewat `init --port` dan pakai port yang sama pada `--auth-api-url` di langkah `payload migrate`.
+
+## Urutan Perintah Lengkap
+
+Contoh berikut memakai project aplikasi `myapp` dengan app code `MYAPP`, dan satu resource bernama `item` dari tabel `item`. Langkah 5 dan 7 diulang untuk setiap resource aplikasi.
+
+### 1. Memasang layanan auth
+
+```bat
+cd /d D:\projects\myapp
+npx restforge config set-default --config=config/db-connection.env
+npx restforge auth-service init --app-config=db-connection.env
+npm install
+```
+
+`init` menyalin file layanan auth dan membuat `config/auth.env`. Detail ada di [`init.md`](./init.md).
+
+### 2. Membuat database layanan auth
+
+```bat
+cd /d D:\projects\myapp
+npx restforge auth-service bootstrap
+```
+
+`bootstrap` menampilkan password `superadmin` dan `app_secret` aplikasi SYSTEM, lalu menyimpannya ke `data-storage/credential/auth-service-superadmin.txt`. Pindahkan keduanya ke tempat yang aman, lalu hapus file tersebut. Detail ada di [`bootstrap.md`](./bootstrap.md).
+
+### 3. Menjalankan layanan auth
+
+```bat
+cd /d D:\projects\myapp
+npx restforge serve --project=auth-service --config=auth.env
+```
+
+Perintah ini berjalan terus, sehingga dijalankan di terminal tersendiri. Layanan auth harus aktif sebelum login dan sebelum editor RBAC dipakai.
+
+### 4. Menghubungkan aplikasi ke layanan auth
+
+```bat
+cd /d D:projectsmyapp
+npx restforge auth-service link --project=myapp --app-code=MYAPP
+```
+
+Langkah ini dijalankan sebelum endpoint pertama dibuat. `link` menulis `AUTH_APP_CODE` dan kunci verifikasi token ke env aplikasi, sehingga payload dan endpoint yang dibuat sesudahnya otomatis dilindungi. Detail ada di [`link.md`](./link.md).
+
+### 5. Membuat payload dan endpoint aplikasi
+
+```bat
+cd /d D:projectsmyapp
+npx restforge payload generate --table=item
+npx restforge endpoint create --project=myapp --name=item --payload=item.json
+```
+
+`payload generate` memasang blok `authGuard` ke `payload/item.json`. `endpoint create` lalu membuat file guard `src/plugins/myapp-auth-guard.js` dan menambahkan resource `ITEM` ke manifest permission `config/auth-manifest.json`. Isi manifest dijelaskan di [`manifest.md`](./manifest.md).
+
+### 6. Mendaftarkan permission dan user owner
+
+```bat
+cd /d D:\projects\myapp
+npx restforge auth-service provision --manifest=config/auth-manifest.json --owner-email=owner@myapp.com
+```
+
+`--owner-email` wajib diisi dengan alamat yang bisa menerima email selama user owner belum ada. Owner baru menerima email notifikasi di alamat ini lewat SMTP yang diatur di [Pengiriman Email](./init.md#pengiriman-email). Bila password owner dibuat acak, `provision` menampilkannya dan menyimpannya ke `data-storage/credential/<app code huruf kecil>-owner.txt`. Pindahkan password ke tempat yang aman, lalu hapus file tersebut. Detail ada di [`provision.md`](./provision.md).
+
+### 7. Membuat payload frontend
+
+```bat
+cd /d D:\projects\myapp
+npx restforge payload migrate --name=item.json --project=myapp ^
+  --output=frontend/payload --plugin=vanilla-js-auth ^
+  --auth-app-code=MYAPP ^
+  --auth-api-url=http://localhost:3100/api/auth-service
+```
+
+Plugin `vanilla-js-auth` wajib karena editor RBAC hanya berjalan di plugin ini. Untuk RDF yang memakai `authGuard`, `payload migrate` menulis entri `permissions.<pageRef>.read` ke file aplikasi UDF sehingga menu halaman mengikuti permission READ. Detail ada di [`payload migrate`](../payload/migrate.md#permissions-untuk-plugin-vanilla-js-auth).
+
+### 8. Membuat editor RBAC
+
+```bat
+cd /d D:\projects\myapp
+npx restforge-designer rbac --create --project=myapp
+```
+
+Detail ada di [`rbac.md`](../../restforge-frontend/rbac.md).
+
+### 9. Membuat aplikasi frontend
+
+```bat
+cd /d D:\projects\myapp
+npx restforge-designer generate --payload=./frontend/payload/myapp.json ^
+  --output=./frontend/apps/myapp --overwrite
+```
+
+Alur auth-service berakhir di `generate`. [`auth --attach`](../../restforge-frontend/auth.md) tidak dipakai, dan `generate` tidak memperingatkan `js/rfx_auth.js` untuk aplikasi ini.
+
+### Setelah Urutan Selesai
+
+Jalankan aplikasi dengan `npx restforge serve --project=myapp --config=db-connection.env`, lalu buka halaman login frontend. User owner login dengan app code `MYAPP`, username hasil `provision` (misalnya `myapp-owner`), dan password yang ditampilkan `provision`. Halaman login juga menampilkan link Forgot password?, yang mengirim link reset ke email akun dan membuka halaman `reset-password.html` untuk menyimpan password baru.
+
+## Menambah Tabel Setelah Auth Service Aktif
+
+Selama env aplikasi berisi `AUTH_APP_CODE`, tabel baru tidak memerlukan perintah `auth-service` tersendiri. Contoh berikut menambah tabel `supplier` dari schema `schema/supplier.js` sampai payload frontend.
+
+```bat
+cd /d D:projectsmyapp
+npx restforge schema migrate --schema-path=./schema/supplier.js
+npx restforge payload generate --table=supplier
+npx restforge endpoint create --project=myapp --name=supplier --payload=supplier.json
+npx restforge payload migrate --name=supplier.json --project=myapp ^
+  --output=frontend/payload --plugin=vanilla-js-auth ^
+  --auth-app-code=MYAPP ^
+  --auth-api-url=http://localhost:3100/api/auth-service
+```
+
+Keempat perintah itu diulang untuk setiap tabel. Setelah semua tabel selesai, perintah berikut cukup dijalankan sekali.
+
+```bat
+cd /d D:projectsmyapp
+npx restforge auth-service provision --manifest=config/auth-manifest.json
+npx restforge-designer generate --payload=./frontend/payload/myapp.json ^
+  --output=./frontend/apps/myapp --overwrite
+```
+
+`provision` tidak memerlukan `--owner-email` karena owner sudah terdaftar. Jalankan ulang `serve --project=myapp` agar endpoint baru dimuat. User owner sudah bisa memakai endpoint dan menu baru sebelum `provision`, karena role `OWNER` melewati pemeriksaan permission. Role lain baru mendapat akses setelah permission didaftarkan dan diberikan lewat halaman Assign Permissions.
+
+Resource yang harus terbuka tanpa login diatur lewat `publicPaths` atau `"enabled": false` pada blok `authGuard` di RDF. `payload generate`, `endpoint create`, dan `link` tidak mengubah blok `authGuard` yang sudah ada.
+
+Pada project dengan `TENANT_MODE=multi`, urutan perintah di atas tetap sama. `schema migrate` menambahkan field `tenant_id` dan unique per tenant ke SDF tabel baru, lalu `payload generate` menambahkan `requestScope` ke RDF-nya, sehingga `project tenant --activate` tidak perlu dijalankan lagi. Perilaku ini dijelaskan di [`schema migrate`](../schema/migrate.md#project-multi-tenant) dan [`payload generate`](../payload/generate.md#project-multi-tenant).
+
+Saat deploy, `provision` dijalankan lagi untuk database layanan auth di environment tujuan, karena permission yang didaftarkan di development tidak ikut terbawa.
+
+## Registrasi Publik
+
+Pada pengaturan default, user hanya dibuat oleh owner lewat editor RBAC. Registrasi publik membiarkan calon pengguna mendaftar sendiri, dan setiap pendaftar menjadi owner dari tenant miliknya. Tenant adalah satu kelompok user dan role yang terpisah dari kelompok lain di aplikasi yang sama.
+
+Registrasi dibuka dengan menjalankan [`provision`](./provision.md) memakai flag `--allow-self-register`. Registrasi baru berjalan bila SMTP dan `APP_BASE_URL` di `config/auth.env` sudah diisi, seperti di [Pengiriman Email](./init.md#pengiriman-email). Tanpa flag, registrasi tertutup, termasuk saat `provision` dijalankan ulang tanpa flag.
+
+```bat
+cd /d D:\projects\myapp
+npx restforge auth-service provision --manifest=config/auth-manifest.json ^
+  --owner-email=owner@myapp.com --allow-self-register
+```
+
+Frontend hasil [`generate`](../../restforge-frontend/generate.md) dengan plugin `vanilla-js-auth` memuat halaman `register.html` dan `set-password.html`. Link Create one di halaman login hanya tampil saat registrasi terbuka.
+
+Alur pendaftar berjalan dalam empat langkah.
+
+1. Pendaftar mengisi nama, email, dan nomor WhatsApp (opsional) di halaman register.
+2. Layanan auth membuat tenant, user, dan role `OWNER` untuk pendaftar, lalu mengirim email aktivasi.
+3. Pendaftar membuka link di email, lalu menetapkan password di halaman set password.
+4. Pendaftar login dengan app code, email sebagai username, dan password baru.
+
+Registrasi hanya memisahkan user dan role per tenant. Data bisnis aplikasi, seperti tabel `item`, baru terpisah per tenant setelah `project tenant --activate` dijalankan. Perilaku tampilan editor RBAC untuk owner tenant dijelaskan di [`rbac`](../../restforge-frontend/rbac.md).
+
+## Struktur Folder
+
+![Struktur folder project sesudah init dan bootstrap: init menyalin config, schema, data-storage, payload, dan src; bootstrap menambah modul dan model di src serta metadata, dan membuat schema auth di database](assets/struktur-folder-auth-service.svg)
+
+Seluruh file layanan auth berada di dalam folder project aplikasi. Layanan dan aplikasi memakai database yang sama, tetapi tabel layanan auth berada di schema `auth` sedangkan tabel aplikasi tetap di schema miliknya.
+
+## Perintah Aplikasi yang Ikut Menyentuh Tabel Auth
+
+Dua perintah yang dijalankan dari root project aplikasi membaca seluruh folder `schema/`, termasuk `schema/auth/`.
+
+- `schema migrate --drop` membuang dan membuat ulang tabel layanan auth bersama tabel aplikasi, sehingga user, role, dan permission hilang.
+- `data push --all-schemas` ikut memasukkan data awal layanan auth dari `data-storage/auth/`.
+
+Untuk data aplikasi, push dengan `--schema=public` atau `--table=<NAME>`. Untuk membuat ulang tabel layanan auth, pakai [`bootstrap --reset`](./bootstrap.md#reset) yang hanya menyentuh schema `auth`.
+
+```bat
+cd /d D:\projects\myapp
+npx restforge data push --schema=public --config=db-connection.env
+```
+
+---
+
+**Lihat juga**: [`init`](./init.md) · [`bootstrap`](./bootstrap.md) · [`link`](./link.md) · [`manifest`](./manifest.md) · [`provision`](./provision.md) · [`rbac`](../../restforge-frontend/rbac.md) · [`commands/`](../../README.md) · [`README`](../../../README.md)
