@@ -89,7 +89,7 @@ Dua sifat penting `text` saat diturunkan dari database:
 | `required` | boolean | Field wajib diisi |
 | `unique` | boolean | Nilai harus unik (diberlakukan database) |
 | `default` | any | Nilai default jika tidak diisi |
-| `nullable` | boolean | Boleh NULL (default: `true` jika tidak `required`) |
+| `nullable` | boolean | Boleh NULL (default: `true`). `false` pada field yang tidak `required` menolak nilai kosong yang dikirim (lihat [Nilai Kosong dan `nullable`](#nilai-kosong-dan-nullable)) |
 | `primaryKey` | boolean | Penanda primary key |
 | `autoGenerate` | boolean | Auto-generate value oleh runtime saat INSERT bila field kosong. Tipe yang didukung: `uuid`, `string`, `date`, `datetime`, `timestamp`, `timestamptz` (lihat tabel di bawah) |
 | `filledByHook` | boolean | Nilai field diisi handler `onBefore*`, sehingga `required` tidak dicek terhadap request body (lihat [Field yang Diisi Handler](#field-yang-diisi-handler-filledbyhook)) |
@@ -229,6 +229,30 @@ Field 'jatuh_tempo' is required but was not filled by the onBeforeInsert hook
 Payload yang memakai `filledByHook` wajib mendaftarkan handler `onBeforeInsert`, `onBeforeUpdate`, `onBeforeCompositeInsert`, atau `onBeforeCompositeUpdate` di `components`. Tanpa handler tersebut, validasi payload menolak payload. Nilai `filledByHook` harus boolean.
 
 Di frontend hasil [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#field-yang-diisi-hook-filledbyhook), field ini tampil `readonly` dan tidak wajib diisi di form.
+
+## Nilai Kosong dan `nullable`
+
+Field opsional yang dikosongkan boleh dikirim sebagai `null`, sebagai string kosong `""`, atau tidak dikirim sama sekali. Field yang tidak `required` dan bernilai kosong tidak melewati validasi tipe, lalu disimpan sesuai tabel berikut.
+
+| Nilai di request | Tipe `string`, `text` | Tipe lain (`date`, `timestamp`, `integer`, `boolean`, `uuid`, `json`, dst.) |
+|------------------|-----------------------|------------------------------------------------------------------------------|
+| `""` | Disimpan `""` | Disimpan NULL |
+| `null` | Disimpan NULL | Disimpan NULL |
+| Tidak dikirim | Create memakai default kolom, update tidak mengubah kolom | Create memakai default kolom, update tidak mengubah kolom |
+
+Konversi `""` menjadi NULL membuat form yang mengosongkan input tanggal atau angka tetap tersimpan, karena database menolak `""` pada kolom bertipe tanggal, angka, dan boolean. Oracle menyimpan `""` pada kolom string sebagai NULL karena sifat VARCHAR2.
+
+Constraint `nullable` mengatur boleh tidaknya field opsional bernilai NULL. Tanpa `nullable`, atau dengan `"nullable": true`, nilai kosong disimpan seperti tabel di atas. Dengan `"nullable": false`, request yang mengirim `null`, atau `""` pada tipe selain `string` dan `text`, ditolak dengan HTTP 400 `VALIDATION_FAILED`.
+
+```json
+{ "name": "approved_on", "type": "date", "constraints": { "nullable": false } }
+```
+
+```
+Field 'approved_on' cannot be null
+```
+
+Field `nullable: false` yang tidak dikirim tetap diterima, sehingga create memakai default kolom dan update tidak mengubah kolomnya. Untuk field yang wajib selalu dikirim, pakai `required`. Pada field `required`, nilai kosong sudah ditolak oleh `required`, sehingga `nullable` tidak berpengaruh.
 
 ## Custom Error Message
 

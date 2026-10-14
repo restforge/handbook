@@ -53,6 +53,7 @@ Request body berisi JSON object dengan pasangan field-value. Kolom yang benar-be
 - Kolom hasil JOIN yang didaftarkan di `fieldName` bersifat baca dan cari saja. Nilainya diabaikan bila ikut terkirim di body. Pada rilis sebelumnya kombinasi tersebut membuat INSERT gagal sehingga endpoint membalas 500
 - Primary key boleh disertakan atau tidak (auto UUID jika kosong/"-"/tidak ada)
 - String kosong `""` dikonversi secara otomatis ke `null` pada field yang namanya mengandung `date`, `time`, `timestamp`, `tags`, atau `json`
+- Field opsional di `fieldValidation` yang bertipe selain `string` dan `text` menyimpan `""` sebagai NULL, apa pun nama field-nya. Constraint `nullable: false` menolak nilai kosong tersebut dengan `400` (lihat [Nilai Kosong dan `nullable`](../catalogs/rdf/field-validation.md#nilai-kosong-dan-nullable))
 - Field yang terdaftar di `dateTimeFields` menerima pola `DATEFORMAT`/`DATETIMEFORMAT` atau bentuk ISO. Tanggal saja pada field `timestamp`/`timestamptz` ditolak `400`, dan nilai di response mengikuti pola yang sama (lihat [`catalogs/rdf/datetime-fields.md`](../catalogs/rdf/datetime-fields.md))
 
 ### Contoh Request

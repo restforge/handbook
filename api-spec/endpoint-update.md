@@ -46,6 +46,8 @@ Request body berisi JSON object dengan primary key (wajib) dan field-value yang 
 
 Kolom yang boleh masuk klausa SET adalah irisan `fieldName` dengan kolom fisik tabel, yaitu proyeksi `schemaFields`. Kolom hasil JOIN yang ikut dicantumkan di `fieldName` agar muncul di response dan dapat dicari bersifat baca saja, dan nilainya diabaikan diam-diam bila ikut terkirim di body. Aturan yang sama berlaku pada jalur update ber-lock. Pada rilis sebelumnya kombinasi tersebut membuat UPDATE gagal sehingga endpoint membalas 500.
 
+Field opsional dikosongkan dengan mengirim `null` atau `""`. Pada field `fieldValidation` bertipe selain `string` dan `text`, `""` disimpan sebagai NULL, sedangkan constraint `nullable: false` menolaknya dengan `400` (lihat [Nilai Kosong dan `nullable`](../catalogs/rdf/field-validation.md#nilai-kosong-dan-nullable)).
+
 ### Contoh Request
 
 **1. Update beberapa field:**
