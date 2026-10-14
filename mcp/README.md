@@ -156,14 +156,16 @@ lewat `setup_list_configs`, `setup_set_default_config`, `setup_get_default_confi
 
 ## Verb yang Sengaja Tidak Di-wrap
 
-Tiga kelompok command tetap berada di luar surface tool, dengan alasan berbeda. Agent
-menjelaskan dan menyerahkan perintahnya kepada pengguna, bukan menjalankannya sendiri.
+Empat kelompok command tetap berada di luar surface tool, dengan alasan berbeda. Untuk tiga
+kelompok pertama, agent menjelaskan dan menyerahkan perintahnya kepada pengguna, bukan
+menjalankannya sendiri.
 
 | Command | Alasan |
 |---|---|
 | `restforge fast-track` | Alurnya interaktif (input license dan parameter database, menu pilihan scope, konfirmasi akhir), dan MCP server tidak dapat menjawab prompt. Pipeline yang sama dapat direproduksi langkah demi langkah lewat tool `codegen_*` dan `designer_*`. |
 | `restforge serve` beserta start dan stop runtime | Mengikuti pola dua langkah launcher: proses yang dinyalakan dari sesi AI mati bersama sesi tersebut, sehingga tool hanya menulis skrip dan pengguna yang menjalankannya. |
 | `restforge license deactivate` | Efeknya melampaui folder project karena melepas seat aktivasi secara terpusat di license server, dan tidak dapat dibatalkan dari sisi ini. Pemeriksaan keadaan aktivasi tetap tersedia lewat `license_info`. |
+| `restforge endpoint list` dan `restforge processor list` | Keduanya read-only dan tidak membutuhkan guardrail maupun validasi parameter sebelum CLI berjalan. Agent menjalankannya langsung lewat shell dengan `--format=json` agar output-nya bisa dibaca sebagai JSON. |
 
 ## Rujukan Terkait
 

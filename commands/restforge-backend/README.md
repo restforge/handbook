@@ -44,8 +44,8 @@ Setiap resource memiliki satu atau lebih verb. Detail flag per verb ada di folde
 |----------|------|--------|--------|
 | `schema` | `list`, `describe`, `init`, `validate`, `models`, `generate-ddl`, `migrate`, `introspect`, `diff`, `apply`, `template` | SDF: definisi, validasi, migrasi, introspeksi, drift detection, reference template | [`schema/`](./schema/) |
 | `payload` | `generate`, `validate`, `diff`, `sync`, `migrate` | RDF: kelola payload JSON sumber generate endpoint | [`payload/`](./payload/) |
-| `endpoint` | `create` | Generate endpoint REST dari file payload JSON | [`endpoint/`](./endpoint/) |
-| `processor` | `create` | Generate processor (background job atau business logic handler) | [`processor/`](./processor/) |
+| `endpoint` | `create`, `list` | Generate dan menampilkan daftar endpoint REST dari file payload JSON | [`endpoint/`](./endpoint/) |
+| `processor` | `create`, `list` | Generate dan menampilkan daftar processor (background job atau business logic handler) | [`processor/`](./processor/) |
 | `dashboard` | `create` | Generate dashboard endpoint multi-widget aggregator | [`dashboard/`](./dashboard/) |
 | `kafka` | `consumer-create` | Generate Kafka consumer code dari payload JSON | [`kafka/`](./kafka/) |
 | `test` | `generate` | Generate integration test (Jest + Supertest) untuk endpoint existing | [`test/`](./test/) |
@@ -54,7 +54,7 @@ Setiap resource memiliki satu atau lebih verb. Detail flag per verb ada di folde
 | `data` | `pull`, `push` | Export/import baris data tabel (format agnostic lintas dialect) berbasis SDF | [`data/`](./data/) |
 | `config` | `schema`, `template`, `set-default`, `get-default`, `clear-default`, `list` | Kelola config schema, template, dan default config per working directory | [`config/`](./config/) |
 | `catalog` | `field-validation`, `query-declarative`, `dashboard`, `dbschema` | Introspeksi spesifikasi RESTForge (output JSON catalog) | [`catalog/`](./catalog/) |
-| `project` | `list`, `delete`, `auth`, `sdk` | Operasi level project | [`project/`](./project/) |
+| `project` | `list`, `delete`, `auth`, `sdk`, `tenant` | Operasi level project | [`project/`](./project/) |
 | `auth-service` | `init`, `bootstrap`, `link`, `manifest`, `provision` | Layanan auth berbasis RBAC per aplikasi | [`auth-service/`](./auth-service/) |
 
 ## Binary Kafka Consumer
