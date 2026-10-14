@@ -22,7 +22,7 @@ npx restforge schema migrate --schema-path=<PATH> --config=<FILE> [options]
 | `--drop <BOOL>` | `false` | Drop tabel sebelum re-create |
 | `--dry-run` | `false` | Preview DDL tanpa menjalankan ke database |
 | `--max-name-length <N>` | per dialect | Batas panjang identifier (override default) |
-| `--auto-create-db` | `false` | Khusus postgres/mysql: otomatis buat database jika belum ada (skip konfirmasi). Berguna untuk CI/CD |
+| `--auto-create-db` | `false` | Khusus postgres/mysql: otomatis buat database jika belum ada (skip konfirmasi), lalu migrasi dilanjutkan pada proses yang sama. Berguna untuk CI/CD |
 
 ## Behavior Database Tidak Ada (PostgreSQL/MySQL)
 
@@ -37,7 +37,7 @@ Sebelum menerapkan DDL, `schema migrate` melakukan pre-check existence database 
 
 Sebelum prompt ditampilkan, command mencetak baris informasi: `Database '<DB_NAME>' was not found on the postgresql server.` (atau `mysql` sesuai dialect).
 
-Setelah database berhasil dibuat, command mencetak `[OK] Database '<DB_NAME>' created successfully.` lalu menampilkan instruksi `Please re-run the command:` diikuti contoh perintah re-run. Pendekatan create-then-exit dipilih agar state migrate dimulai dari kondisi bersih, bukan auto-continue dari state yang baru berubah.
+Setelah database berhasil dibuat, command mencetak `[OK] Database '<DB_NAME>' created successfully.` lalu langsung menerapkan DDL ke database baru pada proses yang sama, sehingga command tidak perlu dijalankan ulang. Exit code mengikuti hasil penerapan DDL.
 
 Mekanisme pembuatan database:
 

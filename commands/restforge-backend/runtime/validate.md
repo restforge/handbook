@@ -15,7 +15,7 @@ npx restforge validate --config=<FILE> [--auto-create-db]
 | Flag | Wajib | Default | Keterangan |
 |------|-------|---------|-----------|
 | `--config <FILE>` | Ya | - | File config yang divalidasi (mis. `db-connection.env`) |
-| `--auto-create-db` | Tidak | `false` | Khusus postgres/mysql: otomatis buat database jika belum ada (lewati konfirmasi). Berguna untuk CI/CD dan Docker. Tidak berlaku untuk sqlite/oracle |
+| `--auto-create-db` | Tidak | `false` | Khusus postgres/mysql: otomatis buat database jika belum ada (lewati konfirmasi), lalu pemeriksaan berikutnya dilanjutkan pada proses yang sama. Berguna untuk CI/CD dan Docker. Tidak berlaku untuk sqlite/oracle |
 
 ## Behavior Database Tidak Ada (PostgreSQL/MySQL)
 
@@ -30,7 +30,7 @@ Apabila target database (`DB_NAME`) belum ada pada server PostgreSQL atau MySQL,
 
 Sebelum prompt ditampilkan, command mencetak baris informasi: `Database '<DB_NAME>' was not found on the postgresql server.` (atau `mysql` sesuai dialect).
 
-Setelah database berhasil dibuat, command mencetak `[OK] Database '<DB_NAME>' created successfully.` lalu menampilkan instruksi `Please re-run the command:` diikuti contoh perintah re-run. Command exit dengan code `0`. State berubah karena pembuatan database, sehingga validasi ulang diperlukan untuk konfirmasi seluruh komponen.
+Setelah database berhasil dibuat, command mencetak `[OK] Database '<DB_NAME>' created successfully.` lalu menguji ulang koneksi ke database baru dan melanjutkan pemeriksaan Redis, Kafka, preflight konfigurasi, dan license pada proses yang sama. Exit code mengikuti hasil seluruh pemeriksaan, yaitu `0` bila semua lulus dan `1` bila ada yang gagal.
 
 Mekanisme pembuatan database:
 
