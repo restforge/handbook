@@ -20,7 +20,8 @@ npx restforge dashboard create \
 | `--project=<name>` | ya | — | Nama project target |
 | `--name=<name>` | ya | — | Nama dashboard; wajib berawalan `dash-` (misalnya `dash-sales`, `dash-inbound`) |
 | `--payload=<file>` | ya | — | Nama file payload JSON di folder `payload/` (dengan atau tanpa ekstensi `.json`) |
-| `--database=<type>` | tidak | `postgres` | Dialect database: `postgres`, `mysql`, `oracle` |
+| `--database=<type>` | tidak | `DB_TYPE` config, lalu `postgres` | Dialect database: `postgres`, `mysql`, `oracle` |
+| `--config=<file>` | tidak | default config | File config (.env) yang `DB_TYPE`-nya dipakai bila `--database` tidak diisi |
 | `--force=<bool>` | tidak | `false` | `true` untuk overwrite file existing (file lama diarsipkan ke `.restforge/archive/`) |
 
 > **Perlu diketahui:** Nilai `--name` menjadi filename `{name}.js` dan URL segment. Validator menolak nama tanpa prefix `dash-` dengan pesan error yang jelas.
@@ -112,7 +113,7 @@ Dashboard mendukung tiga dialect database:
 
 ### Generate per Dialect
 
-Pilih dialect via flag `--database` saat generate:
+Bila `--database` tidak diisi, dialect mengikuti `DB_TYPE` di file `--config` atau di default config, lalu jatuh ke `postgres` bila tidak ada config. Flag `--database` dipakai untuk memilih dialect secara eksplisit:
 
 ```bash
 # PostgreSQL (default)
