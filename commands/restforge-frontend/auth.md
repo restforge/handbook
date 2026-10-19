@@ -159,6 +159,29 @@ npx restforge-designer auth --remove --project=myapp --force
 
 ---
 
+## Perilaku Sesi
+
+Access token diperbarui otomatis sebelum habis selama halaman masih terbuka, sehingga pengguna yang aktif tidak perlu login ulang setiap kali umur access token habis. Pembaruan juga dijalankan saat tab kembali terlihat atau komputer baru bangun dari sleep. Bila beberapa tab terbuka, tab-tab itu bergantian memperbarui token dan hanya satu permintaan pembaruan yang dikirim ke server.
+
+Perilaku ini berlaku untuk frontend hasil `auth --create`, frontend hasil `auth --attach`, dan frontend `vanilla-js-auth` dengan blok `auth` yang memuat `appCode` dan `authApiUrl`.
+
+Halaman yang dibuka dengan access token yang sudah habis tetapi refresh token yang masih berlaku memulihkan sesinya sebelum isi halaman dimuat. Request yang gagal karena access token habis diulang otomatis satu kali setelah token diperbarui, sehingga halaman tidak perlu menanganinya sendiri. Gangguan jaringan atau error server saat pembaruan tidak mengakhiri sesi, dan pembaruan dicoba lagi selama access token lama masih berlaku.
+
+### Batas Sesi
+
+Sesi berakhir dalam dua keadaan.
+
+- Refresh token habis masa berlakunya atau ditolak server.
+- Idle timeout tercapai, yaitu pengguna tidak beraktivitas selama durasi yang dikonfigurasi. Batas ini hanya ada pada frontend dengan blok `auth` (lihat [`auth.idleTimeoutMinutes`](../../catalogs/udf/app-config.md)). Frontend login-only hasil `auth --create` tidak punya idle timeout.
+
+Umur access token dan refresh token mengikuti konfigurasi backend. Pengguna yang terus aktif tetap login selama refresh token masih berlaku, walaupun umur access token sudah lewat berkali-kali.
+
+### Saat Sesi Berakhir
+
+Pengguna diarahkan ke halaman login dengan pesan "Your session has expired. Please sign in again.". Pada frontend dengan blok `auth`, sesi yang berakhir karena idle timeout tetap menampilkan pesan idle timeout yang sudah ada.
+
+---
+
 ## Kontrak `window.Auth`
 
 `js/rfx_auth.js` mengekspos objek global `window.Auth` yang dipakai halaman
@@ -176,6 +199,10 @@ memanggil API secara manual dari script kustom.
 | `Auth.setSession(data)` | Simpan sesi (token + user) ke storage |
 | `Auth.clearSession()` | Hapus seluruh sesi dari storage |
 | `Auth.authHeaders(extra)` | Objek header untuk request API (lihat semantik di bawah) |
+| `Auth.refresh(failedToken)` | Perbarui access token, mengembalikan Promise. Pemanggil bersamaan dalam satu tab berbagi satu permintaan, dan tidak ada permintaan yang dikirim bila token di storage sudah berbeda dari `failedToken` dan masih segar. Ditolak dengan `error.sessionExpired = true` bila sesi berakhir, sedangkan gangguan jaringan atau error server tidak mengakhiri sesi |
+| `Auth.ensureFreshToken()` | Mengembalikan Promise berisi access token yang aman dipakai. Token diperbarui lebih dulu bila sisa umurnya kurang dari 5 menit. Ditolak dengan `error.sessionExpired = true` bila sesi tidak bisa dipulihkan |
+| `Auth.expireSession()` | Akhiri sesi tanpa memanggil server, lalu arahkan ke halaman login dengan pesan sesi berakhir |
+| `Auth.whenReady()` | Mengembalikan Promise pemeriksaan sesi halaman, dijalankan sekali per halaman. Selesai dengan access token bila sesi bisa dipakai, atau `null` setelah gangguan jaringan atau server (halaman tetap terbuka). Bila sesi tidak ada atau berakhir, halaman dialihkan ke login dan Promise tidak pernah selesai |
 | `Auth.logout()` | Akhiri sesi lalu arahkan ke halaman login |
 | `Auth.API_BASE_URL` | URL base API yang dipakai |
 
