@@ -114,7 +114,7 @@ Berikut daftar lengkap field top-level yang dikenali oleh generator. Field dikel
 
 | Field | Tipe | Keterangan |
 |-------|------|-----------|
-| `masterDetail` | object | Konfigurasi endpoint composite (header + detail) |
+| `masterDetail` | object | Konfigurasi endpoint composite (header + satu atau beberapa detail) |
 | `adjustConfig` | object | Konfigurasi endpoint `/adjust` (atomic increment/decrement) |
 | `aggregateConfig` | object | Konfigurasi JOIN untuk endpoint `/aggregate` |
 | `workflow` | object | Konfigurasi endpoint `/change-status` (state machine + hook) |

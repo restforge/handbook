@@ -98,6 +98,56 @@ POST http://localhost:3000/api/mini-inventory/stock-inbound/update-composite
 
 ---
 
+## Detail Satu Baris (`one`)
+
+RDF yang memakai [`masterDetail.details[]`](../catalogs/rdf/master-detail.md#beberapa-detail-dalam-satu-rdf-details) dapat memuat detail `one`, yaitu detail dengan paling banyak satu baris per header. Berbeda dengan detail `many`, detail `one` dikirim sebagai objek atau `null` di key `detailId`-nya, bukan sebagai struktur `{insert, update, delete}`.
+
+```json
+{
+  "business_partner": {
+    "business_partner_id": "d4e57872-17df-450e-b3bd-c0fac1dcb485",
+    "partner_name": "PT Komponen Prima Abadi",
+    "vendor": { "vendor_id": "a1b2c3d4-...", "payment_term_days": 45 },
+    "customer": { "customer_code": "CUST-004", "credit_limit": 5000000 }
+  }
+}
+```
+
+Nilai key detail `one` menentukan operasinya.
+
+| Nilai key detail `one` | Perilaku |
+|------------------------|----------|
+| Key tidak dikirim | Detail tidak disentuh |
+| Objek tanpa primary key detail | Insert. Unique pada foreign key menolak insert kedua untuk header yang sama dengan `409` `UNIQUE_VIOLATION` |
+| Objek dengan primary key detail | Update baris detail milik header ini. Primary key milik header lain dilewati tanpa error dan tanpa perubahan |
+| `null` | Delete baris detail milik header ini. Ditolak dengan `400` `FOREIGN_KEY_VIOLATION` bila baris itu masih dirujuk data lain |
+
+Nilai selain objek dan `null`, misalnya angka atau array, ditolak dengan `400`.
+
+Pada contoh di atas, `vendor` memperbarui baris vendor yang sudah ada, sedangkan `customer` menambah baris customer baru. Response memuat seluruh detail `one` sebagai objek atau `null`, dan `_operations` dihitung per `detailId`.
+
+```json
+"_operations": {
+  "vendor": { "deleted": 0, "updated": 1, "inserted": 0 },
+  "customer": { "deleted": 0, "updated": 0, "inserted": 1 }
+}
+```
+
+### Penolakan dan Key Error
+
+Dua detail `one` dapat punya kolom bernama sama, sehingga pelanggaran constraint pada detail `one` memakai key `{detailId}.{kolom}` di map `details`. Field header dan detail `many` tetap memakai format error yang sudah ada.
+
+| HTTP Status | Kondisi | Key di `details` |
+|:-----------:|---------|------------------|
+| 400 | Nilai key detail `one` bukan objek dan bukan `null`, dengan pesan `Property "customer" must be an object or null` | Tanpa `details` |
+| 400 | `null` pada detail yang masih dirujuk data lain (`FOREIGN_KEY_VIOLATION`), dengan pesan `Data is still referenced by other records` | `vendor.vendor_id` |
+| 400 | CHECK atau NOT NULL pada kolom detail (`CHECK_VIOLATION` atau `NOT_NULL_VIOLATION`) | `customer.payment_term_days` |
+| 409 | Insert detail `one` kedua, atau unique constraint pada kolom detail (`UNIQUE_VIOLATION`) | `customer.business_partner_id` |
+
+Seluruh operasi berjalan dalam satu transaction, sehingga penolakan di salah satu detail membatalkan perubahan header dan detail lain.
+
+---
+
 ## Body Options (Opsional)
 
 Endpoint `/update-composite` mendukung format request body alternatif dengan wrapper `{data, options}`. Format ini memungkinkan pengiriman opsi tambahan yang dapat dibaca oleh component engine handler dan processor.
@@ -241,7 +291,7 @@ Aturan lengkap ada di [`catalogs/rdf/datetime-fields.md`](../catalogs/rdf/dateti
 | 400 | CHECK atau NOT NULL ditolak database (`code: CHECK_VIOLATION` / `NOT_NULL_VIOLATION`) | `Invalid data`, dengan `details` per field header |
 | 500 | Error database | `An error occurred while updating stock-inbound data` |
 
-> Pelanggaran constraint pada tabel detail dibalas tanpa `details`. Rincian bentuk `400` ada di
+> Pelanggaran constraint pada tabel detail `many` dibalas tanpa `details`, sedangkan detail `one` memakai key `{detailId}.{kolom}` (lihat [Detail Satu Baris](#detail-satu-baris-one)). Rincian bentuk `400` ada di
 > [`catalogs/rdf/field-validation.md`](../catalogs/rdf/field-validation.md#format-error-response-400-pelanggaran-constraint-database).
 >
 > **Field `details` pada 409:** response unique violation (`code: UNIQUE_VIOLATION`) menyertakan map `details` =

@@ -128,6 +128,7 @@ POST http://localhost:3000/api/mini-inventory/stock-inbound/read-composite
 | `count` | number | Jumlah header record yang cocok |
 | `data` | array | Array header records, masing-masing berisi field yang terdaftar di `fieldName` dan detail items |
 | `data[].{detail_table}` | array | Detail items per header. Kolomnya mengikuti `detailQuery` bila dideklarasikan, lihat [Konfigurasi Detail Query](#konfigurasi-detail-query) |
+| `data[].{detailId}` | object atau null | Detail `one` pada RDF ber-`details[]`, lihat [Detail Satu Baris](#detail-satu-baris-one) |
 
 > **Catatan:** Kolom seperti `product_code` dan `product_name` berasal dari JOIN di `detailQuery`, bukan dari tabel detail langsung.
 
@@ -154,6 +155,37 @@ Aturan lengkap ada di [`catalogs/rdf/datetime-fields.md`](../catalogs/rdf/dateti
 | 400 | Payload kosong | `Payload cannot be empty` |
 | 400 | WHERE tidak ada | `Property where is required` |
 | 500 | Error database | `An error occurred while reading stock-inbound data` |
+
+---
+
+## Detail Satu Baris (`one`)
+
+RDF yang memakai [`masterDetail.details[]`](../catalogs/rdf/master-detail.md#beberapa-detail-dalam-satu-rdf-details) dapat memuat detail `one`, yaitu detail dengan paling banyak satu baris per header. Detail `one` dikembalikan sebagai objek, atau `null` bila header belum punya baris detail itu. Detail `many` tetap berupa array.
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "business_partner_id": "d4e57872-17df-450e-b3bd-c0fac1dcb485",
+      "partner_code": "BP-0001",
+      "partner_name": "PT Komponen Prima",
+      "vendor": {
+        "vendor_id": "a1b2c3d4-...",
+        "business_partner_id": "d4e57872-...",
+        "vendor_code": "VEND-001",
+        "payment_term_days": 30,
+        "is_active": true
+      },
+      "customer": null
+    }
+  ],
+  "timestamp": "2026-03-30T09:05:00.000Z"
+}
+```
+
+Key di setiap record adalah `detailId` entri yang bersangkutan, sehingga `vendor` dan `customer` pada contoh di atas muncul sejajar dengan field header. Kolom objek detail `one` mengikuti `detailQuery` bila dideklarasikan, dan mengikuti query default seperti pada detail `many` bila tidak.
 
 ---
 

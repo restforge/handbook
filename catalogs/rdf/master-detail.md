@@ -2,6 +2,8 @@
 
 Konfigurasi untuk operasi composite (header + detail dalam satu transaksi). Wajib ditetapkan jika action `createComposite`, `updateComposite`, atau `readComposite` aktif.
 
+`masterDetail` punya dua bentuk. Bentuk satu detail menulis `detailTable` dan `detailConfig` langsung di level atas, seperti contoh di bawah. Bentuk `details[]` membawa beberapa detail sekaligus, dan dijelaskan di bagian [Beberapa Detail dalam Satu RDF](#beberapa-detail-dalam-satu-rdf-details).
+
 ```json
 {
     "action": {
@@ -45,6 +47,8 @@ Nama key `total_items`, `total_qty`, dan `total_amount` di contoh di atas hanya 
 
 ## Properti Top-Level `masterDetail`
 
+Tabel berikut berlaku untuk bentuk satu detail. Pada bentuk `details[]`, hanya `enabled` dan `transactionMode` yang tetap di level atas, sedangkan properti lainnya berpindah ke setiap entri.
+
 | Property | Tipe | Keterangan |
 |----------|------|-----------|
 | `enabled` | boolean | Mengaktifkan fitur master-detail |
@@ -56,6 +60,119 @@ Nama key `total_items`, `total_qty`, dan `total_amount` di contoh di atas hanya 
 | `headerCalculations` | object | Field header yang dihitung secara otomatis dari detail items |
 
 Blok `masterDetail` beserta `detailConfig` dapat digenerate otomatis dari introspeksi database lewat [`payload generate --detail=<table>`](../../commands/restforge-backend/payload/generate.md#master-detail-otomatis---detail). `headerCalculations` dan entry `autoCalculateFields` bertipe `calculated` tetap perlu dilengkapi manual setelahnya; lihat bagian [Pengisian Manual Setelah Generate](#pengisian-manual-setelah-generate---detail) di bawah.
+
+## Beberapa Detail dalam Satu RDF (`details[]`)
+
+Satu RDF composite dapat membawa beberapa detail, masing-masing dengan kardinalitas sendiri. Business Partner, misalnya, punya peran vendor dan peran customer yang paling banyak satu baris per partner, ditambah daftar kontak yang bisa berisi banyak baris. Untuk kebutuhan ini, `masterDetail` memakai array `details[]` sebagai pengganti pasangan `detailTable` dan `detailConfig` di level atas.
+
+```json
+{
+    "tableName": "business_partner",
+    "primaryKey": "business_partner_id",
+    "fieldName": ["business_partner_id", "partner_code", "partner_name", "is_active"],
+    "action": { "datatables": false, "createComposite": true, "updateComposite": true, "readComposite": true },
+    "masterDetail": {
+        "enabled": true,
+        "transactionMode": "required",
+        "details": [
+            {
+                "detailId": "vendor",
+                "cardinality": "one",
+                "detailTable": "vendor",
+                "foreignKey": "business_partner_id",
+                "cascadeDelete": false,
+                "detailConfig": {
+                    "tableName": "vendor",
+                    "primaryKey": "vendor_id",
+                    "fieldName": [
+                        "vendor_id", "business_partner_id", "vendor_code",
+                        "payment_term_days", "is_active"
+                    ],
+                    "requiredFields": ["vendor_code"]
+                }
+            },
+            {
+                "detailId": "customer",
+                "cardinality": "one",
+                "detailTable": "customer",
+                "foreignKey": "business_partner_id",
+                "cascadeDelete": false,
+                "detailConfig": {
+                    "tableName": "customer",
+                    "primaryKey": "customer_id",
+                    "fieldName": [
+                        "customer_id", "business_partner_id", "customer_code",
+                        "credit_limit", "payment_term_days", "is_active"
+                    ],
+                    "requiredFields": ["customer_code"]
+                }
+            },
+            {
+                "detailId": "contact",
+                "cardinality": "many",
+                "detailTable": "contact",
+                "foreignKey": "business_partner_id",
+                "cascadeDelete": true,
+                "detailConfig": {
+                    "tableName": "contact",
+                    "primaryKey": "contact_id",
+                    "fieldName": [
+                        "contact_id", "business_partner_id", "contact_name", "contact_phone"
+                    ],
+                    "requiredFields": ["contact_name"]
+                }
+            }
+        ]
+    }
+}
+```
+
+Setiap entri memakai properti yang sama dengan bentuk satu detail, ditambah `detailId` dan `cardinality`. Properti `enabled` dan `transactionMode` tetap berada di level atas `masterDetail`.
+
+### Properti Entri `details[]`
+
+| Property | Tipe | Wajib | Keterangan |
+|----------|------|:-----:|-----------|
+| `detailId` | string | Ya | Nama key detail di body request dan response composite. Diawali huruf dan hanya berisi huruf, angka, atau underscore. Harus unik dalam satu RDF dan berbeda dari semua kolom di `fieldName` header |
+| `cardinality` | string | Ya | `"one"` untuk detail dengan paling banyak satu baris per header, atau `"many"` untuk detail berisi banyak baris |
+| `detailTable` | string | Ya | Nama tabel detail di database |
+| `foreignKey` | string | Ya | Kolom FK di tabel detail yang merujuk ke header |
+| `cascadeDelete` | boolean | Tidak | Sama seperti pada bentuk satu detail |
+| `detailConfig` | object | Ya | Konfigurasi tabel detail, lihat [Properti `detailConfig`](#properti-detailconfig) |
+| `headerCalculations` | object | Tidak | Agregat header dari baris detail. Hanya untuk `cardinality: "many"` |
+
+### Kardinalitas Detail
+
+Detail `many` mengikuti kontrak composite yang sudah ada: array pada `create-composite`, struktur `{insert, update, delete}` pada `update-composite`, dan array pada `read-composite`. Detail `one` berbentuk objek di ketiga endpoint itu. Kontraknya dijelaskan di [`create-composite`](../../api-spec/endpoint-create-composite.md#detail-satu-baris-one), [`update-composite`](../../api-spec/endpoint-update-composite.md#detail-satu-baris-one), dan [`read-composite`](../../api-spec/endpoint-read-composite.md#detail-satu-baris-one).
+
+| Aspek | `one` | `many` |
+|-------|-------|--------|
+| Bentuk di `create-composite` | Objek, atau `null` | Array |
+| Bentuk di `update-composite` | Objek, atau `null` untuk melepas detail | `{insert, update, delete}` |
+| Bentuk di `read-composite` | Objek, atau `null` bila detail belum ada | Array |
+| `headerCalculations` dan `autoCalculateFields` | Tidak didukung | Didukung |
+| Key error constraint di response `400` dan `409` | `{detailId}.{kolom}` | Tanpa `details` |
+
+Detail menjadi `one` bila kolom `foreignKey`-nya unique di SDF, yaitu unique yang hanya berisi kolom itu. Tabel detail tanpa unique tunggal pada `foreignKey` menjadi `many`. [`payload generate --detail`](../../commands/restforge-backend/payload/generate.md#master-detail-otomatis---detail) menurunkan nilai ini otomatis, sedangkan RDF yang ditulis manual boleh menetapkannya sendiri. Bila `cardinality: "one"` ditulis untuk kolom yang tidak unique, `endpoint create` mencetak peringatan karena database tidak menolak baris kedua.
+
+### Aturan Validator
+
+`payload validate` dan `endpoint create` menolak `details[]` yang melanggar salah satu aturan berikut.
+
+| Kondisi | Contoh |
+|---------|--------|
+| `details` bukan array atau tidak punya entri | `"details": []` |
+| `details` dicampur dengan bentuk satu detail | `detailTable`, `foreignKey`, `cascadeDelete`, `detailConfig`, atau `headerCalculations` ditulis di level atas `masterDetail` bersama `details` |
+| Entri tidak punya `detailId`, `cardinality`, `detailTable`, `foreignKey`, atau `detailConfig` | Entri tanpa `foreignKey` |
+| `cardinality` di luar `one` dan `many` | `"cardinality": "single"` |
+| `detailId` bukan identifier, ganda, atau sama dengan kolom di `fieldName` header | `"detailId": "vendor-role"`, dua entri `vendor`, atau `detailId` `partner_name` |
+| `headerCalculations` atau `detailConfig.autoCalculateFields` pada detail `one` | Entri `vendor` dengan `headerCalculations` |
+
+Aturan di bagian [Deklarasi Invalid](#deklarasi-invalid) berlaku untuk setiap entri. Key di luar daftar properti entri tidak ditolak, tetapi menghasilkan warning.
+
+### Bentuk Satu Detail Tetap Valid
+
+RDF dengan `detailTable` dan `detailConfig` di level atas tidak perlu diubah. Bentuk itu dibaca sebagai satu detail `many` dengan `detailId` sama dengan nama tabel detail tanpa schema, sehingga key di body request dan response tetap seperti sebelumnya. Kedua bentuk tidak boleh dipakai bersamaan dalam satu RDF.
 
 ## Properti `detailConfig`
 
@@ -69,6 +186,8 @@ Blok `masterDetail` beserta `detailConfig` dapat digenerate otomatis dari intros
 | `autoCalculateFields` | object | Tidak | Field detail yang dihitung otomatis per baris |
 | `fieldValidation` | array | Tidak | Tipe dan constraint tiap kolom detail, format sama persis dengan [`fieldValidation`](./field-validation.md) level root RDF |
 | `foreignKeys` | array | Tidak | Foreign key tabel detail yang bukan foreign key ke tabel master (lihat [Properti `detailConfig.foreignKeys[]`](#properti-detailconfigforeignkeys)) |
+| `uniqueConstraints` | array | Tidak | Pemetaan unique constraint tabel detail, dengan format sama seperti [`uniqueConstraints`](./unique-constraints.md) level root. Pada detail `one` di MySQL dan Oracle, registry ini membuat error unique memuat key `{detailId}.{kolom}`. Terisi otomatis oleh `payload generate --detail` untuk bentuk `details[]` |
+| `checkConstraints` | array | Tidak | Pemetaan CHECK constraint tabel detail, dengan format sama seperti [`checkConstraints`](./check-constraints.md) level root. Pada detail `one`, registry ini membuat pelanggaran CHECK memuat key `{detailId}.{kolom}`, dan tanpa registry response CHECK tidak memuat `details`. Terisi otomatis dari `checks` SDF oleh `payload generate --detail` untuk bentuk `details[]` |
 
 `fieldValidation` dan `foreignKeys` bersifat aditif: RDF lama yang belum memilikinya tetap valid. Keduanya terisi otomatis oleh `payload generate --detail` dan dikonsumsi `payload migrate` untuk menghasilkan blok `details[]` UDF secara penuh (lihat [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#master-detail-menjadi-details) dan [`catalogs/udf/master-detail.md`](../udf/master-detail.md)) — bukan properti yang perlu ditulis manual.
 
@@ -171,6 +290,8 @@ Saat `endpoint create` dijalankan untuk RDF dengan `masterDetail.enabled: true`,
 
 Tiga pengecekan pertama bersifat blocking: ketidakcocokan menolak `endpoint create` sebelum satu file pun ditulis, dengan pesan yang menyebut nama tabel atau kolom yang bermasalah. Pengecekan keempat murni informasional, karena kolom tersebut berpotensi membuat insert detail gagal di runtime kecuali diisi mekanisme lain (default database, trigger, dan sejenisnya).
 
+Pada bentuk `details[]`, keempat pengecekan dijalankan untuk setiap entri, dan hasilnya dicetak per `detailId`. Detail `one` yang kolom `foreignKey`-nya tidak punya unique tunggal di tabel menghasilkan peringatan, karena database tidak menolak baris detail kedua untuk header yang sama.
+
 Validasi ini dilewati bersama validasi header ketika `endpoint create` dijalankan dengan `--skip-schema-check`.
 
 ## Field Tak Dikenal di Request Composite (Runtime)
@@ -193,6 +314,8 @@ langsung di dalam `masterDetail`, sedangkan `autoCalculateFields` satu level leb
 dalam `detailConfig`. Karena keduanya diisi manual pada langkah yang sama, keliru meletakkan
 `autoCalculateFields` sejajar dengan `detailConfig` (bukan di dalamnya) adalah kesalahan yang mudah
 terjadi.
+
+Pada bentuk `details[]`, kedua bagian ini ditulis di dalam entri `many` yang bersangkutan. `headerCalculations` sejajar dengan `detailConfig` entri itu, dan `autoCalculateFields` berada di dalam `detailConfig` entri itu.
 
 Benar, `autoCalculateFields` di dalam `detailConfig`:
 

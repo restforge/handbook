@@ -15,6 +15,8 @@ Pola master-detail dipakai ketika satu record (master) memiliki kumpulan baris t
 
 UDF mendeklarasikan detail di field `details[]` di page object master. Setiap entry di `details[]` mendefinisikan satu tabel detail.
 
+Detail punya dua kardinalitas. Detail `many` tampil sebagai grid berisi banyak baris, sedangkan detail `one` tampil sebagai sub-form untuk paling banyak satu baris per master, misalnya peran vendor dan peran customer pada Business Partner. Detail tanpa `cardinality` diperlakukan sebagai `many`.
+
 Blok `details[]` boleh ditulis manual seperti contoh di bawah, tetapi umumnya dihasilkan otomatis oleh [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#master-detail-menjadi-details) dari RDF backend ber-[`masterDetail`](../rdf/master-detail.md) — field, tipe, dan foreign key detail diturunkan langsung dari skema database lewat `payload generate --detail`, tanpa perlu ditulis tangan dari nol.
 
 ## Sintaks
@@ -49,10 +51,15 @@ Blok `details[]` boleh ditulis manual seperti contoh di bawah, tetapi umumnya di
 | Properti | Tipe | Wajib | Keterangan |
 |----------|------|:-----:|-----------|
 | `detailId` | string | ✓ | Identifier detail (snake_case atau camelCase). Dipakai sebagai key di payload save dan URL endpoint detail |
+| `cardinality` | string | ✗ | `"one"` atau `"many"`. Detail `one` dirender sebagai sub-form, sedangkan `many` atau tanpa `cardinality` dirender sebagai grid. Diisi oleh `payload migrate`, lihat [Detail Satu Baris](#detail-satu-baris-one) |
 | `detailTitle` | string | ✗ | Judul section grid di form, juga dipakai di pesan validasi grid. Bila kosong, judul diambil dari `detailId` dalam Title Case, misalnya `good_receipt_item` menjadi `Good Receipt Item` |
 | `primaryKey` | string | ✓ | Nama field primary key untuk baris detail |
 | `fields` | array | ✓ | Array definisi field detail (minimal 1, sama struktur seperti field master) |
 | `summary` | object | ✗ | Baris ringkasan agregat di bagian bawah grid detail (lihat [Properti `summary`](#properti-summary)) |
+| `emptyText` | string | ✗ | Khusus detail `one`. Teks sub-form selama detail belum ada |
+| `addLabel` | string | ✗ | Khusus detail `one`. Label tombol penambah detail |
+| `removeLabel` | string | ✗ | Khusus detail `one`. Label tombol pelepas detail |
+| `fieldRows` | array | ✗ | Khusus detail `one`. Susunan field di sub-form, dengan format sama seperti [`fieldRows`](./field-rows.md) page |
 
 ### Aturan Validasi `details[]`
 
@@ -62,6 +69,13 @@ Blok `details[]` boleh ditulis manual seperti contoh di bawah, tetapi umumnya di
 | `primaryKey` wajib | `"[<pageId>].details[<detailId>] primaryKey must be provided"` |
 | `fields` wajib non-empty | `"[<pageId>].details[<detailId>] fields must be provided and cannot be empty"` |
 | Setiap field di `details[].fields[]` wajib `name`, `label`, `type` valid | Error per-field seperti di master |
+| `cardinality` selain `one` dan `many` | Error: `"[<pageId>].details[<detailId>] cardinality must be 'one' or 'many', got <value>"` |
+| `emptyText`, `addLabel`, atau `removeLabel` bukan string | Error: `"[<pageId>].details[<detailId>] <atribut> must be a string, got <tipe>"` |
+| `emptyText`, `addLabel`, `removeLabel`, atau `fieldRows` pada detail yang bukan `one` | Warning, atribut diabaikan |
+| `fieldRows` detail `one` bukan array | Error |
+| `fieldRows` detail `one` menyebut field yang tidak ada, atau tidak menyebut field non-hidden | Warning, seperti `fieldRows` page |
+| Field header bernama `{detailId}_{name}` bentrok dengan field detail `one` | Error, karena keduanya memakai id elemen `form-group-{detailId}-{name}` |
+| `defaultValue` IdGen pada field detail melanggar aturan IdGen | Error, aturannya sama dengan field page (lihat [ID Generation](./id-generation.md)) |
 
 ## Field di Detail
 
@@ -292,6 +306,212 @@ Tampilan `totalQtyField` dan `grandTotalField` mengikuti `format`/`decimalPlaces
 
 Ketiga properti independen — boleh mengisi salah satu saja, kombinasi mana pun, atau mengosongkan seluruh blok `summary` bila grid detail tidak perlu baris ringkasan.
 
+## Detail Satu Baris (`one`)
+
+Detail `one` cocok untuk data yang melengkapi master dengan paling banyak satu baris, seperti peran vendor dan peran customer pada satu Business Partner. Grid kurang tepat untuk kasus ini karena tidak bisa membedakan peran yang belum ada dari peran yang ada tetapi masih kosong, dan tidak menyediakan alur tambah atau lepas peran.
+
+Detail `one` ditulis sebagai entry `details[]` dengan `cardinality: "one"`. Contoh berikut memuat page Business Partner dengan dua detail `one` yang ditempatkan di tab masing-masing, serta dua kolom list `listOnly`.
+
+```json
+{
+    "pages": [
+        {
+            "pageId": "business-partner",
+            "pageTitle": "Business Partner",
+            "apiPath": "business-partner",
+            "primaryKey": "business_partner_id",
+            "displayField": "partner_name",
+            "editorType": "modal",
+            "fields": [
+                {
+                    "name": "partner_code",
+                    "label": "Partner Code",
+                    "type": "text",
+                    "required": true,
+                    "inTable": true,
+                    "tableOrder": 1
+                },
+                {
+                    "name": "partner_name",
+                    "label": "Partner Name",
+                    "type": "text",
+                    "required": true,
+                    "inTable": true,
+                    "tableOrder": 2
+                },
+                {
+                    "name": "vendor_code",
+                    "label": "Vendor",
+                    "type": "text",
+                    "listOnly": true,
+                    "inTable": true,
+                    "tableOrder": 3
+                },
+                {
+                    "name": "customer_code",
+                    "label": "Customer",
+                    "type": "text",
+                    "listOnly": true,
+                    "inTable": true,
+                    "tableOrder": 4
+                }
+            ],
+            "details": [
+                {
+                    "detailId": "vendor",
+                    "cardinality": "one",
+                    "detailTitle": "Vendor",
+                    "primaryKey": "vendor_id",
+                    "emptyText": "This partner is not a vendor yet. Add the vendor role to buy from this partner.",
+                    "addLabel": "Add Vendor Role",
+                    "removeLabel": "Remove Vendor Role",
+                    "fields": [
+                        {
+                            "name": "vendor_code",
+                            "label": "Vendor Code",
+                            "type": "text",
+                            "required": true,
+                            "readonlyOnEdit": true,
+                            "defaultValue": {
+                                "source": "idgen",
+                                "mode": "number",
+                                "resource": "vendor",
+                                "format": "text",
+                                "prefix": "VEND",
+                                "separator": "-",
+                                "numDigits": 3
+                            }
+                        },
+                        {
+                            "name": "payment_term_days",
+                            "label": "Payment Term Days",
+                            "type": "number"
+                        },
+                        {
+                            "name": "is_active",
+                            "label": "Status",
+                            "type": "checkbox",
+                            "defaultValue": true
+                        }
+                    ],
+                    "fieldRows": [
+                        { "fields": ["vendor_code", "payment_term_days"] },
+                        { "fields": ["is_active"] }
+                    ]
+                },
+                {
+                    "detailId": "customer",
+                    "cardinality": "one",
+                    "detailTitle": "Customer",
+                    "primaryKey": "customer_id",
+                    "fields": [
+                        {
+                            "name": "customer_code",
+                            "label": "Customer Code",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "name": "credit_limit",
+                            "label": "Credit Limit",
+                            "type": "number",
+                            "format": "number",
+                            "decimalPlaces": 2
+                        },
+                        {
+                            "name": "payment_term_days",
+                            "label": "Payment Term Days",
+                            "type": "number"
+                        }
+                    ]
+                }
+            ],
+            "formLayout": {
+                "tabs": [
+                    {
+                        "title": "General",
+                        "rows": [
+                            {
+                                "columns": [
+                                    {
+                                        "cards": [
+                                            {
+                                                "title": "Identity",
+                                                "fieldRows": [
+                                                    { "fields": ["partner_code", "partner_name"] }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Vendor",
+                        "rows": [
+                            { "columns": [ { "cards": [ { "detail": "vendor" } ] } ] }
+                        ]
+                    },
+                    {
+                        "title": "Customer",
+                        "rows": [
+                            { "columns": [ { "cards": [ { "detail": "customer" } ] } ] }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+### Asal `cardinality`
+
+`payload migrate` menurunkan `cardinality` dari RDF ke setiap entry `details[]`. Di RDF, detail menjadi `one` bila kolom penghubungnya unique di SDF, seperti dijelaskan di [Kardinalitas Detail](../rdf/master-detail.md#kardinalitas-detail). RDF bentuk lama menghasilkan entry tanpa key `cardinality`, sehingga UDF yang sudah ada tidak berubah.
+
+Migrate ulang selalu mengikuti RDF untuk `cardinality`, termasuk bila nilainya diubah manual di UDF. Atribut `emptyText`, `addLabel`, `removeLabel`, dan `fieldRows` hasil penyuntingan tetap dipertahankan. Field detail `one` tidak diberi `inTable` dan `tableOrder`, karena detail `one` tidak punya grid.
+
+### Tampilan Sub-Form
+
+Sub-form punya dua keadaan. Selama detail belum ada, sub-form menampilkan `emptyText` dan tombol `addLabel`. Setelah tombol ditekan, sub-form menampilkan field detail dan tombol `removeLabel`.
+
+Atribut teks yang tidak diisi disusun dari `detailTitle`.
+
+| Atribut | Teks bawaan |
+|---------|-------------|
+| `emptyText` | `No {detailTitle} has been added yet.` |
+| `addLabel` | `Add {detailTitle}` |
+| `removeLabel` | `Remove {detailTitle}` |
+
+`fieldRows` mengatur susunan field di sub-form dengan format yang sama seperti [`fieldRows`](./field-rows.md) page. Tanpa `fieldRows`, field tampil satu per baris sesuai urutan di `fields[]`. Pada page ber-`fieldLayout: "horizontal"`, `fieldRows` detail diabaikan.
+
+### Perilaku di Form
+
+Sub-form mengikuti perilaku form yang sudah ada.
+
+- Load record mengisi sub-form dari `read-composite`, dan detail yang bernilai `null` menampilkan keadaan kosong.
+- Menambah atau melepas detail dihitung sebagai perubahan isian, sehingga konfirmasi Discard changes ikut muncul.
+- Validasi field detail hanya berjalan selama detail ada.
+- Saat simpan, detail yang ada dikirim sebagai objek dan detail tersimpan yang dilepas dikirim sebagai `null`. Detail yang tidak disentuh tidak dikirim. Kontrak lengkapnya ada di [`create-composite`](../../api-spec/endpoint-create-composite.md#detail-satu-baris-one) dan [`update-composite`](../../api-spec/endpoint-update-composite.md#detail-satu-baris-one).
+- `readonlyOnEdit` pada field detail mengunci field setelah detail tersimpan.
+- Field detail yang ber-`defaultValue` IdGen meminta nilai saat detail ditambahkan (lihat [ID Generation](./id-generation.md#idgen-pada-field-detail-one)).
+- Pada mode duplicate, field detail `unique` mendapat akhiran `-COPY`, field IdGen meminta nilai baru, dan primary key detail tidak disalin.
+
+### Id Elemen dan Key Error
+
+Field detail `one` memakai id elemen `form-group-{detailId}-{name}`, dengan underscore pada nama menjadi tanda hubung. Field `payment_term_days` pada detail `vendor`, misalnya, memakai id `form-group-vendor-payment-term-days`. Namespace ini mencegah dua detail yang punya kolom bernama sama saling bentrok.
+
+Key `{detailId}.{kolom}` pada response error `400` dan `409` dipetakan ke field sub-form yang bersangkutan, dan tab yang memuat card detail itu menampilkan badge jumlah error. Error yang tidak menunjuk field yang dirender, seperti penolakan unique untuk detail kedua, tampil di tingkat sub-form.
+
+### Detail di Dalam Card `formLayout`
+
+Card di `formLayout` dapat merujuk satu detail lewat `"detail": "<detailId>"`, sebagai pengganti `fieldRows` atau `rows`. Card detail berlaku untuk detail `one` maupun `many`, dan hanya boleh berada di card tingkat pertama. Satu `detailId` paling banyak dirujuk satu card, dan detail yang tidak dirujuk card mana pun dirender setelah seluruh `formLayout`. Aturan lengkapnya ada di user guide designer pada bagian Detail di dalam Card.
+
+### Kolom Khusus List (`listOnly`)
+
+Kolom hasil JOIN di `datatablesQuery`, seperti `vendor_code` dan `customer_code` pada contoh di atas, perlu tampil di tabel list tanpa ikut form. Field seperti ini diberi `listOnly: true`, dengan aturan di [`field-attributes.md`](./field-attributes.md#listonly).
+
 ## Multiple Details Per Master
 
 Satu master dapat memiliki beberapa tabel detail:
@@ -321,6 +541,8 @@ Satu master dapat memiliki beberapa tabel detail:
 
 Setiap detail di-render sebagai bagian terpisah di form master. Tombol tambah baris pada tiap grid detail berlabel `Add Item` dan memakai gaya sekunder bergaris tepi, sehingga tombol penyimpan form master tetap satu-satunya tombol primer di panel.
 
+Detail `many` dan detail `one` boleh dicampur dalam satu master. Detail `one` dirender sebagai sub-form dan dapat ditempatkan di tab lewat card `detail` di `formLayout`, sedangkan detail yang tidak dirujuk card mana pun dirender setelah seluruh `formLayout`.
+
 ## Endpoint API yang Dipakai
 
 Generator menggunakan pola endpoint berikut untuk operasi detail:
@@ -328,7 +550,7 @@ Generator menggunakan pola endpoint berikut untuk operasi detail:
 | Operasi | Endpoint |
 |---------|----------|
 | Load detail per master | `GET <apiBaseUrl>/<apiPath>/<masterId>/<detailId>` |
-| Save master + details (composite) | `POST <apiBaseUrl>/<apiPath>` dengan body `{master: {...}, <detailId>: [...]}` |
+| Save master + details (composite) | `POST <apiBaseUrl>/<apiPath>` dengan body `{master: {...}, <detailId>: [...]}`. Detail `one` dikirim sebagai objek atau `null` |
 | Update master + details | `PUT <apiBaseUrl>/<apiPath>/<masterId>` dengan body composite |
 
 Detail komposisi payload save dan response struktur ditangani oleh plugin runtime. Lihat dokumentasi plugin untuk format payload spesifik.

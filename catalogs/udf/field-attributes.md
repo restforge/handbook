@@ -36,6 +36,7 @@ Format `name`: snake_case direkomendasikan. Generator mengonversi secara otomati
 | `maxlength` | integer | — | Batas maksimal karakter. Berlaku untuk `text` dan `textarea` |
 | `defaultValue` | any | — | Nilai default saat mode Add. Tipe data menyesuaikan field type |
 | `editorMode` | string | — | Mode editor khusus. Valid: `"hidden"`, `"readonly"` |
+| `listOnly` | boolean | `false` | Kolom khusus tabel list: tampil di list, tidak dirender di form dan tidak dikirim saat simpan. Lihat [`listOnly`](#listonly) |
 
 ### `editorMode`
 
@@ -70,6 +71,38 @@ DataTable (render): city_name → "Bandung"
 ```
 
 Tanpa `tableField`, DataTable mencari kolom `city_id` yang hanya berisi UUID, bukan nama kota.
+
+### `listOnly`
+
+Kolom hasil JOIN di `datatablesQuery`, seperti `vendor_code` dan `customer_code` pada halaman Business Partner, perlu tampil di tabel list tetapi bukan bagian form. Field seperti ini diberi `listOnly: true`.
+
+```json
+{
+    "name": "vendor_code",
+    "label": "Vendor",
+    "type": "text",
+    "listOnly": true,
+    "inTable": true,
+    "tableOrder": 3
+}
+```
+
+Perilaku field `listOnly` adalah sebagai berikut.
+
+- Field tidak dirender di form, tidak dikirim saat simpan, dan tidak divalidasi di form.
+- Field tetap tampil di tabel list bila `inTable: true`.
+- Field tidak ikut warning untuk field yang tidak disebut di `fieldRows` atau `formLayout`.
+
+Validator menolak atau memberi warning untuk kombinasi berikut.
+
+| Kondisi | Tingkat |
+|---------|---------|
+| `listOnly` bersama `required: true`, karena field yang tidak dikirim tidak bisa wajib diisi | Error |
+| `listOnly` bukan boolean | Error |
+| `listOnly: true` tanpa `inTable: true`, karena field tidak tampil di form maupun di list | Warning |
+| Field `listOnly` disebut di `fieldRows` atau `formLayout`, padahal sebutan itu tidak berpengaruh | Warning |
+
+Di RDF, kolom tersebut masuk `fieldName` tanpa entry `fieldValidation`, mengikuti konvensi kolom JOIN yang sudah ada. Atribut `listOnly` berlaku untuk field di `fields[]` page.
 
 ## Atribut Khusus Per Tipe
 

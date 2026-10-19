@@ -311,6 +311,7 @@ Beberapa properti terhubung langsung dengan backend, sehingga tetap mengikuti RD
 | `apiPath`, `primaryKey`, `type`, `required`, `maxlength`, `decimalPlaces`, `tableField`, `dataSource.type`, `dataSource.resource`, dan daftar `value` pada `dataSource.options` | Bila diubah manual dan juga berubah di RDF, nilai RDF dipakai disertai peringatan |
 | `actions.<aksi>` bernilai `false` di hasil konversi | Selalu `false`. Peringatan tampil bila page menulis `true` |
 | `temporalType` | Selalu mengikuti RDF |
+| `details[].cardinality` | Selalu mengikuti RDF, lihat [`cardinality` dan Penyuntingan Manual saat Migrate Ulang](#cardinality-dan-penyuntingan-manual-saat-migrate-ulang) |
 | `dataSource.select` | Mengikuti RDF bila berubah di RDF. Kolom yang dirujuk `autofill` dan `optionColumns` selalu ditambahkan (lihat [Atribut Lookup Saat Migrate Ulang](#atribut-lookup-saat-migrate-ulang)) |
 
 Contoh peringatan saat `decimalPlaces` diubah menjadi `0` di page, sedangkan RDF
@@ -559,19 +560,26 @@ Pemetaan RDF → UDF untuk detail:
 
 | Aspek | Sumber RDF | Hasil UDF |
 |---|---|---|
-| `detailId` | `detailConfig.tableName` (nama tabel apa adanya, tanpa transformasi kebab-case) | `details[].detailId` |
-| `detailTitle` | `detailConfig.tableName` dalam Title Case, misalnya `sales_order_item` menjadi `Sales Order Item` | `details[].detailTitle` |
+| `detailId` | `detailConfig.tableName` (nama tabel apa adanya, tanpa transformasi kebab-case). Pada bentuk `details[]`, `detailId` entri | `details[].detailId` |
+| `cardinality` | `masterDetail.details[].cardinality`. RDF bentuk satu detail tidak punya nilai ini | `details[].cardinality`. Tidak ditulis untuk RDF bentuk satu detail |
+| `detailTitle` | `detailConfig.tableName` dalam Title Case, misalnya `sales_order_item` menjadi `Sales Order Item`. Pada bentuk `details[]`, `detailId` dalam Title Case | `details[].detailTitle` |
 | `primaryKey` | `detailConfig.primaryKey` | `details[].primaryKey` |
 | Daftar field | `detailConfig.fieldName`, dikurangi primary key detail, kolom audit, foreign key ke master, dan kolom penanda urutan baris (`line_number`) | `details[].fields[]` |
 | Tipe field | `detailConfig.fieldValidation` | `type`, sama aturan auto-detect dengan field header (lihat tabel di atas) |
 | Field wajib | `detailConfig.requiredFields` | `required: true` |
 | Foreign key non-master | `detailConfig.foreignKeys` | field `select` dengan `dataSource` API — `resource` dari tabel yang dirujuk, `select` berisi kolom yang dirujuk dan kolom tampilan, `url` diisi eksplisit ke endpoint lookup resource tersebut |
 | Kalkulasi per baris (`autoCalculateFields`) | Formula pola `kolomA * kolomB` | field `readonly: true` dengan `calculated.formula` dan `format: "number"`. Formula di luar pola perkalian dua kolom (penjumlahan, fungsi SQL, lebih dari dua operand) tetap dikonversi jadi `readonly: true` tanpa `calculated`, disertai warning per kolom |
-| Agregat header (`headerCalculations`) | `masterDetail.headerCalculations` | blok `summary` pada `details[]` (lihat [`catalogs/udf/master-detail.md`](../../../catalogs/udf/master-detail.md#properti-summary)). Tidak ditulis sama sekali bila `headerCalculations` tidak ada |
+| Agregat header (`headerCalculations`) | `masterDetail.headerCalculations`, atau `headerCalculations` pada entri `many` di bentuk `details[]` | blok `summary` pada `details[]` (lihat [`catalogs/udf/master-detail.md`](../../../catalogs/udf/master-detail.md#properti-summary)). Tidak ditulis sama sekali bila `headerCalculations` tidak ada |
 
-Seluruh field detail mendapat `inTable: true` dengan `tableOrder` kontigu mengikuti urutan
+Seluruh field detail `many` mendapat `inTable: true` dengan `tableOrder` kontigu mengikuti urutan
 kemunculan di `detailConfig.fieldName` — berbeda dari field header yang hanya `inTable`
-bila ada di `datatablesQuery`, grid detail selalu menampilkan seluruh kolomnya.
+bila ada di `datatablesQuery`, grid detail selalu menampilkan seluruh kolomnya. Field detail `one`
+tidak diberi `inTable` dan `tableOrder`, karena detail `one` dirender sebagai sub-form.
+
+RDF bentuk `details[]` menghasilkan satu entri `details[]` UDF per entri RDF. Entri `one` hanya
+memuat `detailId`, `cardinality`, `detailTitle`, `primaryKey`, dan `fields`. Teks sub-form
+(`emptyText`, `addLabel`, `removeLabel`) dan `fieldRows` tidak diisi migrate, sehingga sub-form
+memakai [teks bawaan](../../../catalogs/udf/master-detail.md#tampilan-sub-form) sampai atribut itu ditulis manual.
 
 Contoh hasil konversi untuk detail item sales order:
 
@@ -632,6 +640,14 @@ Contoh hasil konversi untuk detail item sales order:
 ]
 ```
 
+#### `cardinality` dan Penyuntingan Manual saat Migrate Ulang
+
+Migrate ulang selalu mengikuti RDF untuk `cardinality`, termasuk bila nilainya diubah manual di
+UDF. Perubahan unique di SDF yang mengubah `many` menjadi `one`, atau sebaliknya, karena itu
+mengalir ke UDF yang sudah ada. Atribut `emptyText`, `addLabel`, `removeLabel`, dan `fieldRows`
+yang disunting manual dipertahankan. Migrate dengan `--overwrite` membuat ulang page dari nol,
+sehingga seluruh penyuntingan itu hilang.
+
 #### Status `line_number`
 
 `line_number` dikecualikan dari field form detail seperti pada tabel pemetaan di atas. Kolom tersebut bertujuan menyimpan urutan bisnis item per header, bukan sekadar nomor tampilan `#`. Aplikasi yang hanya membutuhkan tampilan terurut berdasarkan primary key atau kolom lain tidak wajib menambahkannya.
@@ -668,7 +684,7 @@ karena keduanya sama-sama membaca nama kolom langsung dari `masterDetail.headerC
 
 | Aspek | Behavior |
 |-------|----------|
-| Master-detail (`masterDetail`) | Dikonversi penuh menjadi `details[]` bila `detailConfig` sudah memuat `fieldValidation` (lihat [Master-Detail Menjadi `details[]`](#master-detail-menjadi-details)). RDF lama tanpa `fieldValidation` hanya mengonversi field header, disertai warning |
+| Master-detail (`masterDetail`) | Dikonversi penuh menjadi `details[]` (satu entri per detail, bentuk satu detail maupun `details[]`) bila `detailConfig` sudah memuat `fieldValidation` (lihat [Master-Detail Menjadi `details[]`](#master-detail-menjadi-details)). RDF lama tanpa `fieldValidation` hanya mengonversi field header, disertai warning |
 | Field layout | Tidak generate `fieldRows` (grid layout). Perlu ditambahkan manual di UDF setelah migrasi. `fieldRows` manual dipertahankan saat migrate ulang, dan kolom baru ditambahkan sebagai baris baru |
 | Custom validation | Validasi UDF (mis. regex pattern) tidak di-generate. Hanya `required` yang dipindahkan |
 | SQL parser | Parser memakai regex untuk pattern standar. Query dengan subquery, CASE, atau aggregate function mungkin tidak terurai sempurna |
@@ -678,15 +694,7 @@ karena keduanya sama-sama membaca nama kolom langsung dari `masterDetail.headerC
 
 ## Workflow Lengkap
 
-```
-┌─────────────────┐  payload migrate  ┌─────────────────────┐  npx restforge-designer generate  ┌─────────────────┐
-│ payload/        │ ────────────────→ │ frontend/payload/   │ ────────────────────────────→ │ ./build/        │
-│ visitors.json   │                   │   app-config.json   │                               │ visitors-app/   │
-│ (RDF, ber-JOIN) │                   │   pages\*.json      │                               │ (HTML/JS/CSS)   │
-└─────────────────┘                   │   visitors-app.json │                               └─────────────────┘
-                                       │   (aggregator/UDF)  │
-                                       └─────────────────────┘
-```
+![Alur payload migrate: payload/visitors.json (RDF ber-JOIN) diubah oleh payload migrate menjadi frontend/payload/ berisi app-config.json, pages\*.json, dan visitors-app.json (aggregator UDF), lalu npx restforge-designer generate menghasilkan ./build/visitors-app/ berisi HTML, JS, dan CSS](assets/alur-payload-migrate.svg)
 
 Langkah:
 

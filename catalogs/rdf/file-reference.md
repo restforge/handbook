@@ -11,7 +11,7 @@ Field SQL di payload (RDF dan dashboard) mendukung dua format penulisan: **inlin
 | `datatablesQuery` | top-level | method `getListQuery()` di model |
 | `viewQuery` | top-level | method `getReadQuery()` di model |
 | `exportQuery` | top-level | export handler |
-| `masterDetail.detailConfig.detailQuery` | nested di bawah `masterDetail.detailConfig` | method `readComposite()` di model |
+| `masterDetail.detailConfig.detailQuery` | nested di bawah `masterDetail.detailConfig`, atau di bawah `masterDetail.details[].detailConfig` pada bentuk `details[]` | method `readComposite()` di model |
 | `advancedQueries.<key>` | object value per key | template loader di constructor model |
 | `nestedQueries.<key>` | array atau object value per key | builder query nested |
 | `customQueries.<key>` | array atau object value per key | custom query handler |

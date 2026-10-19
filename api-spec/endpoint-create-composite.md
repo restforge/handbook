@@ -90,6 +90,58 @@ POST http://localhost:3000/api/mini-inventory/stock-inbound/create-composite
 
 ---
 
+## Detail Satu Baris (`one`)
+
+RDF yang memakai [`masterDetail.details[]`](../catalogs/rdf/master-detail.md#beberapa-detail-dalam-satu-rdf-details) dapat memuat detail `one`, yaitu detail dengan paling banyak satu baris per header. Detail ini dikirim sebagai objek di key `detailId`-nya, di dalam objek header, bukan sebagai array.
+
+```json
+{
+  "business_partner": {
+    "partner_code": "BP-0001",
+    "partner_name": "PT Komponen Prima",
+    "vendor": { "vendor_code": "VEND-001", "payment_term_days": 30 }
+  }
+}
+```
+
+Setiap nilai yang dikirim pada key detail `one` diperlakukan sebagai berikut.
+
+| Nilai key detail `one` | Perilaku |
+|------------------------|----------|
+| Key tidak dikirim | Detail tidak dibuat |
+| `null` | Detail tidak dibuat |
+| Objek tanpa primary key detail | Baris detail dibuat dengan primary key otomatis, dan foreign key diisi dari primary key header |
+| Objek dengan primary key detail | Baris detail dibuat dengan primary key dari request |
+
+Nilai selain objek dan `null`, misalnya string atau array, ditolak dengan `400`.
+
+Response memuat detail `one` sebagai objek berisi field di `detailConfig.fieldName` ditambah primary key dan foreign key detail, atau `null` bila detail tidak dibuat. Pada contoh di atas, `data.vendor` berisi objek vendor dan `data.customer` bernilai `null`. Seluruh operasi berjalan dalam satu transaction, sehingga kegagalan di salah satu detail membatalkan header dan detail lain.
+
+### Key Error `{detailId}.{kolom}`
+
+Dua detail `one` dapat punya kolom bernama sama, misalnya `payment_term_days` di vendor dan di customer. Karena itu pelanggaran constraint pada detail `one` memakai key `{detailId}.{kolom}` di map `details`, sehingga client dapat mengarahkan pesan ke detail yang benar. Field header dan detail `many` tetap memakai format error yang sudah ada.
+
+```json
+{
+  "success": false,
+  "error": "Constraint violation",
+  "code": "CHECK_VIOLATION",
+  "message": "Invalid data",
+  "details": {
+    "customer.payment_term_days": ["Field 'payment_term_days' must be at least 0"]
+  },
+  "timestamp": "2026-03-30T10:30:00.000Z"
+}
+```
+
+| HTTP Status | Kondisi | Contoh key di `details` |
+|:-----------:|---------|------------------|
+| 400 | Nilai key detail `one` bukan objek dan bukan `null`, dengan pesan `Property "vendor" must be an object or null` | Tanpa `details` |
+| 400 | CHECK atau NOT NULL pada kolom detail (`CHECK_VIOLATION` atau `NOT_NULL_VIOLATION`) | `customer.payment_term_days` |
+| 409 | Unique constraint pada kolom detail (`UNIQUE_VIOLATION`) | `vendor.vendor_code` |
+
+---
+
 ## Body Options (Opsional)
 
 Endpoint `/create-composite` mendukung format request body alternatif dengan wrapper `{data, options}`. Format ini memungkinkan pengiriman opsi tambahan yang dapat dibaca oleh component engine handler dan processor.
@@ -215,7 +267,7 @@ Aturan lengkap ada di [`catalogs/rdf/datetime-fields.md`](../catalogs/rdf/dateti
 | 400 | CHECK atau NOT NULL ditolak database (`code: CHECK_VIOLATION` / `NOT_NULL_VIOLATION`) | `Invalid data`, dengan `details` per field header |
 | 500 | Error database lain | `An error occurred while creating stock-inbound data` |
 
-> Pelanggaran constraint pada tabel detail dibalas tanpa `details`. Rincian bentuk `400` ada di
+> Pelanggaran constraint pada tabel detail `many` dibalas tanpa `details`, sedangkan detail `one` memakai key `{detailId}.{kolom}` (lihat [Detail Satu Baris](#detail-satu-baris-one)). Rincian bentuk `400` ada di
 > [`catalogs/rdf/field-validation.md`](../catalogs/rdf/field-validation.md#format-error-response-400-pelanggaran-constraint-database).
 >
 > **Field `details` pada 409:** response unique violation (`code: UNIQUE_VIOLATION`) menyertakan map `details` =

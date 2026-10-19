@@ -21,7 +21,7 @@ npx restforge payload generate --config=<FILE> --table=<NAME> [options]
 |------|---------|-----------|
 | `--output <DIR>` | `payload/` | Output directory untuk file payload yang di-generate |
 | `--schema-path <PATH>` | `schema` | Lokasi SDF (file atau folder). Wajib memuat deklarasi tabel bila tabel memiliki kolom soft-delete, karena blok `softDelete` RDF diturunkan dari SDF. Untuk tabel lain, SDF dipakai bila tersedia untuk menurunkan [`deleteReferences`](#rincian-perujuk-delete-deletereferences) serta [CHECK dan foreign key](#turunan-check-dan-foreign-key-dari-sdf) |
-| `--detail <NAME>` | - | Nama tabel detail untuk generate master-detail otomatis. Lihat [Master-Detail Otomatis (`--detail`)](#master-detail-otomatis---detail) |
+| `--detail <NAMES>` | - | Nama satu tabel detail, atau beberapa tabel dipisah koma, untuk generate master-detail otomatis. Lihat [Master-Detail Otomatis (`--detail`)](#master-detail-otomatis---detail) |
 
 ## Contoh
 
@@ -37,6 +37,9 @@ npx restforge payload generate --config=db.env --table=category --schema-path=./
 
 :: Generate master beserta blok masterDetail otomatis dari tabel detail
 npx restforge payload generate --config=db.env --table=sales_order --detail=sales_order_item
+
+:: Generate master dengan beberapa tabel detail sekaligus
+npx restforge payload generate --config=db.env --table=business_partner --detail=vendor,customer,contact
 ```
 
 ## Field Validation Otomatis
@@ -252,7 +255,7 @@ Untuk Oracle dan SQLite, relasi `belongsTo` juga diturunkan ke [`foreignKeyConst
 
 ## Master-Detail Otomatis (`--detail`)
 
-Flag `--detail=<table>` menghasilkan RDF master seperti biasa DITAMBAH blok [`masterDetail`](../../../catalogs/rdf/master-detail.md) terisi otomatis dari introspeksi tabel detail, sehingga pasangan header-detail tidak perlu ditulis manual dari nol.
+Flag `--detail=<table>` menghasilkan RDF master seperti biasa DITAMBAH blok [`masterDetail`](../../../catalogs/rdf/master-detail.md) terisi otomatis dari introspeksi tabel detail, sehingga pasangan header-detail tidak perlu ditulis manual dari nol. Flag ini menerima satu tabel atau beberapa tabel dipisah koma, misalnya `--detail=vendor,customer`.
 
 ### Yang Dihasilkan
 
@@ -269,6 +272,20 @@ Saat `--detail` diberikan, generate melakukan hal berikut:
 
 Bagian yang **tetap perlu dilengkapi manual** setelah generate: `headerCalculations` dan entry `autoCalculateFields` bertipe `calculated` (formula per baris yang bukan kolom GENERATED database). RDF hasil generate menyertakan key `_manualStub` berisi petunjuk singkat cara mengisi keduanya — lihat [`catalogs/rdf/master-detail.md`](../../../catalogs/rdf/master-detail.md#pengisian-manual-setelah-generate---detail).
 
+### Beberapa Tabel Detail dan `cardinality`
+
+Setiap tabel pada `--detail` diperiksa satu per satu. Detail menjadi `cardinality: "one"` bila kolom penghubungnya (foreign key ke master) unique di SDF, yaitu unique yang hanya berisi kolom itu. Selain itu detail menjadi `"many"`. Nilai ini tidak perlu disunting manual setelah generate.
+
+Bentuk blok `masterDetail` mengikuti hasilnya.
+
+| Masukan `--detail` | Bentuk blok `masterDetail` |
+|--------------------|----------------------------|
+| Satu tabel `many` | Bentuk lama, dengan `detailTable` dan `detailConfig` di level atas. Hasilnya tidak berubah dari perilaku `--detail` dengan satu tabel |
+| Satu tabel `one` | Bentuk [`details[]`](../../../catalogs/rdf/master-detail.md#beberapa-detail-dalam-satu-rdf-details) berisi satu entri |
+| Beberapa tabel | Bentuk `details[]` berisi satu entri per tabel, sesuai urutan di `--detail` |
+
+Pada bentuk `details[]`, `detailId` setiap entri adalah nama tabel tanpa schema, misalnya `vendor`. Setiap entri memuat isi yang sama seperti bentuk lama, ditambah `detailConfig.uniqueConstraints` dan `detailConfig.checkConstraints` yang diturunkan dari database dan SDF. Entri `one` tidak memuat `autoCalculateFields`. Satu file `payload/query/<tabel-kebab>-detail.sql` ditulis untuk setiap tabel. Key `_manualStub` pada bentuk `details[]` menunjuk letak `headerCalculations` di dalam entri `many`.
+
 ### Blok `masterDetail` Existing Dipertahankan
 
 Bila file RDF master sudah ada dan sudah memiliki blok `masterDetail`, generate ulang dengan `--detail` **tidak menimpa** blok tersebut — blok lama dipertahankan apa adanya (konsisten dengan preservasi blok deklaratif lain saat regenerate), dan sebuah warning dicetak yang menjelaskan cara memaksa regenerasi dari database: hapus blok `masterDetail` dari file RDF, lalu jalankan ulang command yang sama.
@@ -281,6 +298,7 @@ Bila file RDF master sudah ada dan sudah memiliki blok `masterDetail`, generate 
 | Tabel detail tidak memiliki foreign key ke tabel master | `masterDetail` mensyaratkan relasi FK detail → master |
 | Primary key tabel detail bukan VARCHAR UUID-compatible | Primary key native `uuid`, atau `varchar`/`text` tanpa default auto-increment sequence |
 | `--detail` bernilai sama dengan `--table` | Master dan detail tidak boleh tabel yang sama |
+| `--detail` kosong, memuat nama kosong (misalnya `vendor,,customer`), atau menyebut tabel yang sama dua kali | Setiap nama tabel harus terisi dan hanya boleh muncul sekali |
 | Foreign key tabel detail tidak merujuk persis primary key tabel master | FK yang merujuk kolom master selain primary key ditolak dengan pesan yang menyebut nama FK, kolom lokal, kolom yang dirujuk, dan primary key master yang diharapkan |
 
 Kondisi terakhir berlaku karena runtime composite mengisi kolom FK detail dengan nilai primary key header; FK yang merujuk kolom lain membuat semantik composite salah secara diam-diam saat runtime.

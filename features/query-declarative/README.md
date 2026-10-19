@@ -33,7 +33,7 @@ Setiap properti query melayani endpoint tertentu. Tabel berikut memetakan proper
 | `viewQuery` | Tidak | Ya | `/read`, `/first`, `/lookup`, `/read-composite` (header) |
 | `viewName` | Tidak | Tidak | `/read`, `/first`, `/lookup`, `/read-composite` (header) |
 | `exportQuery` | Tidak | Ya | `/export` |
-| `masterDetail.detailConfig.detailQuery` | Tidak | Ya | `/read-composite` (detail) |
+| `masterDetail.detailConfig.detailQuery` (atau `masterDetail.details[].detailConfig.detailQuery`) | Tidak | Ya | `/read-composite` (detail) |
 
 `viewName` tidak mendukung file reference karena berisi nama database object, bukan konten SQL.
 

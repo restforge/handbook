@@ -103,6 +103,7 @@ Nomor urut dengan prefix berbasis tanggal. Cocok untuk nomor invoice, nomor SO, 
 |---------|------|:-----:|-----------|
 | `format` | string | ✓ | Format prefix tanggal. Valid: `text`, `yyyy`, `yyyymm`, `yyyymmdd` |
 | `numDigits` | integer | ✓ | Jumlah digit nomor urut. Range valid: 1–12 |
+| `prefix` | string | ✗ | Teks tetap di depan nomor, misalnya kode jenis dokumen. Lihat [Prefix Teks](#prefix-teks-prefix) |
 | `separator` | string | ✗ | Pemisah antara prefix dan nomor. Tidak boleh mengandung `:` |
 | `reserve` | boolean | ✗ | Reservasi nomor sebelum save (lihat penjelasan di bawah) |
 | `ttl` | integer | ✗ | Time-to-live reservasi dalam detik. Wajib >= 10 jika `reserve: true` |
@@ -114,6 +115,28 @@ text, yyyy, yyyymm, yyyymmdd
 ```
 
 Format `text` menghasilkan ID tanpa prefix tanggal (hanya nomor urut). Format `yyyy*` menambahkan prefix tanggal sesuai pola.
+
+### Prefix Teks (`prefix`)
+
+Atribut `prefix` menambahkan teks tetap di depan nomor, sehingga satu resource bisa menghasilkan kode berawalan seperti `VEND-001`. Dengan `format: "text"`, hasilnya berbentuk `{prefix}{separator}{nomor}`. Dengan format tanggal, prefix berada di depan prefix tanggal: `{prefix}{separator}{tanggal}{separator}{nomor}`.
+
+```json
+{
+    "name": "vendor_code",
+    "type": "text",
+    "defaultValue": {
+        "source": "idgen",
+        "mode": "number",
+        "resource": "vendor",
+        "format": "text",
+        "prefix": "VEND",
+        "separator": "-",
+        "numDigits": 3
+    }
+}
+```
+
+Contoh di atas menghasilkan `VEND-001`, `VEND-002`, dan seterusnya. Prefix kosong atau tidak diisi menghasilkan nomor tanpa teks di depan. Backend menolak prefix yang berisi karakter selain huruf, angka, `_`, dan `-`, atau yang lebih dari 32 karakter.
 
 ### Reservasi Nomor (`reserve`)
 
@@ -182,6 +205,14 @@ Field '<name>' defaultValue.pattern must be a non-empty string when mode is '<mo
 ```
 
 Sintaks pattern (mis. `#` untuk digit acak, `?` untuk huruf) bergantung pada implementasi backend generator. Lihat dokumentasi backend (RDF) untuk sintaks lengkap.
+
+## IdGen pada Field Detail `one`
+
+Field di `details[].fields[]` boleh memakai `defaultValue` IdGen, dan validator memeriksanya dengan aturan yang sama seperti field page. Pesan error-nya diawali lokasi detail, misalnya `[business-partner].details[vendor] field 'vendor_code' ...`.
+
+Pada [detail `one`](./master-detail.md#detail-satu-baris-one), nilai IdGen diminta saat detail ditambahkan lewat tombol tambah, bukan saat form dibuka. Pada contoh vendor di atas, kode `VEND-001` terisi ketika peran vendor ditambahkan. Bila field memakai `reserve: true`, alurnya mengikuti mode add. Nomor direservasi saat detail ditambahkan, reservasi dibatalkan bila detail dilepas sebelum simpan atau form ditutup tanpa simpan, dan reservasi dikonfirmasi saat simpan berhasil.
+
+Pada mode duplicate, field IdGen detail `one` meminta nilai baru dan tidak menyalin nilai record asal.
 
 ## Tabel Ringkasan Validasi IdGen
 
