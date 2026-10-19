@@ -163,7 +163,7 @@ npx restforge-designer auth --remove --project=myapp --force
 
 Access token diperbarui otomatis sebelum habis selama halaman masih terbuka, sehingga pengguna yang aktif tidak perlu login ulang setiap kali umur access token habis. Pembaruan juga dijalankan saat tab kembali terlihat atau komputer baru bangun dari sleep. Bila beberapa tab terbuka, tab-tab itu bergantian memperbarui token dan hanya satu permintaan pembaruan yang dikirim ke server.
 
-Perilaku ini berlaku untuk frontend hasil `auth --create`, frontend hasil `auth --attach`, dan frontend `vanilla-js-auth` dengan blok `auth` yang memuat `appCode` dan `authApiUrl`.
+Perilaku ini berlaku untuk frontend hasil `auth --create`, frontend hasil `auth --attach`, serta frontend `vanilla-js-auth` dan `vanilla-js-custom` dengan blok `auth` yang memuat `appCode` dan `authApiUrl`.
 
 Halaman yang dibuka dengan access token yang sudah habis tetapi refresh token yang masih berlaku memulihkan sesinya sebelum isi halaman dimuat. Request yang gagal karena access token habis diulang otomatis satu kali setelah token diperbarui, sehingga halaman tidak perlu menanganinya sendiri. Gangguan jaringan atau error server saat pembaruan tidak mengakhiri sesi, dan pembaruan dicoba lagi selama access token lama masih berlaku.
 
