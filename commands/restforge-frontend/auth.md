@@ -172,13 +172,13 @@ Halaman yang dibuka dengan access token yang sudah habis tetapi refresh token ya
 Sesi berakhir dalam dua keadaan.
 
 - Refresh token habis masa berlakunya atau ditolak server.
-- Idle timeout tercapai, yaitu pengguna tidak beraktivitas selama durasi yang dikonfigurasi. Batas ini hanya ada pada frontend dengan blok `auth` (lihat [`auth.idleTimeoutMinutes`](../../catalogs/udf/app-config.md)). Frontend login-only hasil `auth --create` tidak punya idle timeout.
+- Idle timeout tercapai, yaitu pengguna tidak beraktivitas di semua tab selama durasi yang dikonfigurasi. Aktivitas di satu tab dihitung untuk semua tab, sehingga tab yang ditinggal tidak mengakhiri sesi selama pengguna masih bekerja di tab lain. Batas ini hanya ada pada frontend dengan blok `auth` (lihat [`auth.idleTimeoutMinutes`](../../catalogs/udf/app-config.md)). Frontend login-only hasil `auth --create` tidak punya idle timeout.
 
 Umur access token dan refresh token mengikuti konfigurasi backend. Pengguna yang terus aktif tetap login selama refresh token masih berlaku, walaupun umur access token sudah lewat berkali-kali.
 
 ### Saat Sesi Berakhir
 
-Pengguna diarahkan ke halaman login dengan pesan "Your session has expired. Please sign in again.". Pada frontend dengan blok `auth`, sesi yang berakhir karena idle timeout tetap menampilkan pesan idle timeout yang sudah ada.
+Pengguna diarahkan ke halaman login dengan pesan "Your session has expired. Please sign in again.". Pada frontend dengan blok `auth`, sesi yang berakhir karena idle timeout menampilkan pesan idle timeout di setiap tab yang terbuka.
 
 ---
 

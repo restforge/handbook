@@ -62,7 +62,7 @@ Plugin tertentu (mis. `vanilla-js-auth`) dapat menambahkan field di luar daftar 
 |-------|--------|-----------|
 | `auth.appCode` | `vanilla-js-auth` | Kode aplikasi yang dipakai saat call ke auth API |
 | `auth.authApiUrl` | `vanilla-js-auth` | Endpoint server autentikasi |
-| `auth.idleTimeoutMinutes` | `vanilla-js-auth` | Durasi idle sebelum auto-logout |
+| `auth.idleTimeoutMinutes` | `vanilla-js-auth` | Durasi idle di semua tab sebelum auto-logout. Aktivitas di satu tab dihitung untuk semua tab |
 
 Lihat dokumentasi plugin masing-masing untuk field yang diakui.
 
