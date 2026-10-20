@@ -44,7 +44,7 @@ POST http://localhost:3000/api/mini-inventory/stock-inbound/change-status
 | `{primaryKey}` atau `id` | string | **Ya** | Nilai primary key record yang akan diubah statusnya |
 | `status` | string | **Ya** | Status tujuan (target status) |
 | `remarks` | string | Tidak | Catatan terkait perubahan status. Disimpan jika `remarks` merupakan kolom tabel yang dapat ditulis |
-| `updated_by` | string | Tidak | User yang melakukan perubahan. Disimpan jika `updated_by` merupakan kolom tabel yang dapat ditulis |
+| `updated_by` | string | Tidak | User yang melakukan perubahan. Disimpan jika `updated_by` merupakan kolom tabel yang dapat ditulis. Bila tidak dikirim, nilainya diambil dari identitas token `authGuard`, header `x-user-id`, lalu `"system"` |
 
 ### Contoh Request
 

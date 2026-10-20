@@ -49,6 +49,8 @@ Guard membaca token `Bearer` dari header `Authorization`, lalu:
 
 Token harus berasal dari layanan [auth-service](../../commands/restforge-backend/auth-service/README.md). Layanan itu mengisi klaim `app` (kode aplikasi), `roles` (array), dan `permissions` (array) saat login, dan guard memverifikasi tanda tangan token dengan kunci yang sama. Role `SUPER_ADMIN` dan `OWNER` melewati pemeriksaan permission.
 
+Identitas pengguna dari token yang valid juga dipakai untuk mengisi kolom audit `created_by` dan `updated_by`. Nilainya diambil dari klaim `username`, atau klaim `sub` bila `username` kosong, dan didahulukan atas header `x-user-id`. Urutan lengkapnya ada di [Sumber Nilai `created_by` dan `updated_by`](./audit-columns.md#sumber-nilai-created_by-dan-updated_by).
+
 Perintah [`auth-service link`](../../commands/restforge-backend/auth-service/link.md) memasang blok `authGuard` ke RDF project dan menulis `AUTH_APP_CODE` serta kunci verifikasi ke env aplikasi, sehingga keduanya tidak perlu ditulis manual. Selama env aplikasi berisi `AUTH_APP_CODE`, [`payload generate`](../../commands/restforge-backend/payload/generate.md) dan [`endpoint create`](../../commands/restforge-backend/endpoint/create.md) memasang blok `{ "enabled": true, "appCode": "<AUTH_APP_CODE>", "publicPaths": [] }` ke RDF yang belum punya key `authGuard`. Blok yang sudah ada tidak diubah, sehingga resource publik cukup diberi `"enabled": false` atau `publicPaths`. Tabel berawalan `auth.` dilewati.
 
 ### Pemetaan Permission per Endpoint

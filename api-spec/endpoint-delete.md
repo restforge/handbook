@@ -317,7 +317,7 @@ Alih-alih DELETE fisik, record di-UPDATE dalam satu transaction:
 is_deleted = TRUE, deleted_at = NOW(), deleted_by = <user>
 ```
 
-Nilai `deleted_by` di-resolve berurutan dari body eksplisit, lalu user context request, dengan fallback `'system'`. Kolom yang dideklarasikan `reusable` dimutasi menjadi `{nilai}##{uuidv7}` agar nilai aslinya dapat dipakai ulang oleh record baru tanpa melanggar UNIQUE.
+Nilai `deleted_by` diambil berurutan dari body eksplisit, identitas token `authGuard`, header `x-user-id`, lalu fallback `'system'`. Kolom yang dideklarasikan `reusable` dimutasi menjadi `{nilai}##{uuidv7}` agar nilai aslinya dapat dipakai ulang oleh record baru tanpa melanggar UNIQUE.
 
 ### Semantik FK (FK-Aware)
 

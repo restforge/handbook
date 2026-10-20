@@ -77,6 +77,17 @@ Saat perintah `restforge payload generate` membaca skema database, generator sec
 
 Behavior auto-emission ini memastikan payload yang di-generate dari tabel non-standar langsung kompatibel dengan runtime tanpa intervensi manual.
 
+## Sumber Nilai `created_by` dan `updated_by`
+
+Runtime mengisi kolom pelaku (`created_by`, `updated_by`, dan `deleted_by` pada soft delete) dari sumber pertama yang tersedia dengan urutan berikut.
+
+1. Nilai kolom tersebut di body request, bila kolomnya terdaftar di `fieldName`.
+2. Identitas pengguna yang login, bila [`authGuard`](./auth-guard.md) aktif dan token valid. Nilainya diambil dari klaim `username`, atau klaim `sub` bila `username` kosong.
+3. Header `x-user-id` (atau `user-id`).
+4. Nilai `"system"`.
+
+Identitas dari token didahulukan atas header, sehingga klien tidak dapat memalsukan pelaku perubahan lewat header pada project yang memakai `authGuard`. Urutan ini berlaku untuk `/create`, `/update`, `/adjust`, `/change-status`, `/delete` (soft delete), `/create-composite`, dan `/update-composite`.
+
 ## Aturan Validasi
 
 | Aturan | Pesan Error |

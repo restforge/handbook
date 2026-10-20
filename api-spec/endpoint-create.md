@@ -297,7 +297,7 @@ Primary key dan audit columns diisi secara otomatis oleh sistem. Audit columns d
 |-------|---------------|---------|
 | Primary key (e.g. `supplier_id`) | UUIDv7 | Jika tidak disertakan, kosong, atau bernilai `"-"` |
 | `created_at` | Waktu saat ini menurut `TIMEZONE`, diformat `DATETIMEFORMAT` di response | Selalu ditetapkan saat create |
-| `created_by` | user_id hasil resolusi berurutan: nilai di request body → header `x-user-id` → fallback `"system"` | Selalu ditetapkan saat create |
+| `created_by` | Pelaku hasil resolusi berurutan: nilai di request body → identitas token `authGuard` → header `x-user-id` → fallback `"system"`. Detail di [audit-columns](../catalogs/rdf/audit-columns.md#sumber-nilai-created_by-dan-updated_by) | Selalu ditetapkan saat create |
 | `updated_at` | Waktu saat ini menurut `TIMEZONE`, diformat `DATETIMEFORMAT` di response | Ikut ditetapkan saat create |
 | `updated_by` | Sama dengan resolusi `created_by` | Ikut ditetapkan saat create |
 

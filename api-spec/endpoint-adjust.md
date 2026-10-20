@@ -44,7 +44,7 @@ POST http://localhost:3000/api/mini-inventory/item-product/adjust
 | `adjustments[].field` | string | **Ya** | Nama field yang di-adjust. Harus terdaftar di `adjustConfig.fields` |
 | `adjustments[].value` | number | **Ya** | Delta value: positif = tambah, negatif = kurang. Harus non-zero |
 | `reason` | string | Kondisional | Alasan adjustment. Wajib jika `adjustConfig.reasonRequired = true` |
-| `updated_by` | string | Tidak | Pelaku adjustment (audit). Resolusi nilai berurutan: field ini di request body → header `x-user-id` → fallback `"system"` |
+| `updated_by` | string | Tidak | Pelaku adjustment (audit). Resolusi nilai berurutan: field ini di request body → identitas token `authGuard` → header `x-user-id` → fallback `"system"` |
 
 ### Contoh Request
 

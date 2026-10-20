@@ -384,7 +384,7 @@ Audit columns dikelola secara otomatis dengan nama default `updated_at` dan `upd
 | Field | Nilai Otomatis | Kondisi |
 |-------|---------------|---------|
 | `updated_at` | Waktu saat ini menurut `TIMEZONE`, diformat `DATETIMEFORMAT` di response | Selalu ditetapkan saat update |
-| `updated_by` | user_id hasil resolusi berurutan: nilai di request body → header `x-user-id` → fallback `"system"` | Selalu ditetapkan saat update |
+| `updated_by` | Pelaku hasil resolusi berurutan: nilai di request body → identitas token `authGuard` → header `x-user-id` → fallback `"system"`. Detail di [audit-columns](../catalogs/rdf/audit-columns.md#sumber-nilai-created_by-dan-updated_by) | Selalu ditetapkan saat update |
 
 > **Catatan:** Field `created_at` dan `created_by` **tidak** diubah oleh operasi update. Nama kolom dan nilai mengikuti konvensi audit columns default. Kolom legacy `modified_by`/`modified_date` tidak lagi ditangani runtime.
 
