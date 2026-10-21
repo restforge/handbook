@@ -110,6 +110,29 @@ ORDER BY ...
 LIMIT 10 OFFSET 0
 ```
 
+Pada `/datatables`, query tanpa JOIN atau CTE juga dibungkus subquery bila filter `where`, `filters`, atau pencarian menyentuh kolom yang tidak ada di tabel, misalnya alias `CASE`. Pembungkusan ini berlaku untuk hitungan data terfilter dan data yang dikembalikan, sedangkan `recordsTotal` tetap dihitung dari tabel.
+
+```json
+{
+  "fieldName": ["id", "name", "is_active", "status_label"],
+  "datatablesQuery": "select id, name, is_active, case when is_active then 'Active' else 'Inactive' end as status_label from item_product"
+}
+```
+
+Permintaan `/datatables` dengan kondisi `status_label = 'Active'` dijalankan sebagai berikut.
+
+```sql
+SELECT * FROM (
+  select id, name, is_active, case when is_active then 'Active' else 'Inactive' end as status_label
+  from item_product
+) base_query
+WHERE status_label = $1
+ORDER BY ...
+LIMIT 10 OFFSET 0
+```
+
+Kolom tabel dikenali dari database saat `endpoint create`. Endpoint yang dibuat dengan `--skip-schema-check` menganggap semua kolom `fieldName` sebagai kolom tabel, sehingga filter pada alias `CASE` tanpa JOIN tetap gagal.
+
 ### Placeholder `${tableName}`
 
 Placeholder `${tableName}` di dalam query diganti dengan `readSource` saat generation.
