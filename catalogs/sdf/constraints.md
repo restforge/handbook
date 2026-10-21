@@ -171,6 +171,18 @@ Generator akan otomatis menghasilkan index untuk:
 
 PostgreSQL dan Oracle tidak otomatis menghasilkan index untuk foreign key column, sehingga index eksplisit dari generator dibutuhkan. MySQL otomatis menghasilkan index untuk FK, namun generator tetap menulis DDL eksplisit untuk konsistensi lintas dialect.
 
+Index FK tidak dibuat bila kolom `localKey` sudah unique sendirian, baik lewat constraint `unique` di field maupun lewat entri `uniques` yang hanya berisi kolom itu. Pola ini muncul pada relasi 1:1. Constraint unique sudah membuat index untuk kolom tersebut, dan Oracle menolak index kedua pada kolom yang sama dengan error `ORA-01408`.
+
+```javascript
+relations: {
+  business_partner: { type: 'belongsTo', localKey: 'business_partner_id', references: 'business_partner_id' }
+},
+uniques: [
+  ['company_id', 'customer_code'],
+  ['business_partner_id']                       // relasi 1:1, index FK tidak dibuat
+]
+```
+
 ## Aturan Skip Emit untuk Index Redundan
 
 Bila user mendeklarasikan field di `indexes` array tetapi kolom tersebut sudah punya implicit index dari sumber lain, generator tidak akan menulis `CREATE INDEX` untuk menghindari duplikasi. Sumber implicit index:
@@ -179,6 +191,7 @@ Bila user mendeklarasikan field di `indexes` array tetapi kolom tersebut sudah p
 |-----------------|------------|
 | Field dengan constraint `unique` (single column) | UNIQUE constraint sudah menghasilkan index di semua dialect |
 | Field dengan constraint `pk` | PRIMARY KEY constraint sudah menghasilkan index di semua dialect |
+| Field di `uniques` (single column) | UNIQUE constraint sudah menghasilkan index di semua dialect, termasuk untuk kolom FK |
 | Field di `uniques` (composite) | Composite UNIQUE constraint sudah menghasilkan index di semua dialect |
 | Field di `relations[*].localKey` atau dengan shorthand `fk:` (schema lama) | Auto-emit dari aturan FK auto-index di atas |
 
