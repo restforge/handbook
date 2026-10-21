@@ -46,6 +46,10 @@ Karena tidak ada yang ditulis, pemeriksaan konflik registry dilewati dan `--forc
 
 **Ketersediaan versi**: flag ini masuk ke source platform setelah rilis 5.5.5. Pada versi yang lebih lama CLI menjawab `Unknown flag: --validate-only`.
 
+## Kolom Boolean di Query Widget
+
+MySQL dan Oracle menyimpan kolom `boolean` SDF sebagai teks `'true'` atau `'false'`, sehingga query widget harus membandingkannya dengan teks, misalnya `is_paid = 'true'`. Pada kedua dialect itu, `dashboard create` dan `--validate-only` menampilkan peringatan untuk setiap pembanding kolom dengan `TRUE` atau `FALSE` di `query` maupun `queries`, beserta pembanding pengganti. Peringatan tidak menghentikan generate. Bentuk pembanding per dialect dijelaskan di [Kolom Boolean di Query SQL](../../../catalogs/rdf/data-source.md#kolom-boolean-di-query-sql).
+
 ## Contoh
 
 ```bat

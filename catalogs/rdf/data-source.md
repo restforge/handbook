@@ -91,6 +91,29 @@ SQL khusus untuk endpoint `/export`. Jika tidak ditetapkan, generator melakukan 
 }
 ```
 
+## Kolom Boolean di Query SQL
+
+Kolom bertipe `boolean` di SDF disimpan dengan bentuk yang berbeda per dialect. PostgreSQL memakai tipe `BOOLEAN`, sedangkan MySQL, SQLite, dan Oracle menyimpan teks `'true'` atau `'false'`. Endpoint hasil generate menangani perbedaan ini saat insert, update, dan filter dari request, sehingga nilai `true` di request tetap cocok. SQL yang ditulis sendiri tidak ikut diubah, baik di RDF (`datatablesQuery`, `viewQuery`, `exportQuery`, `detailQuery`, `advancedQueries`, `nestedQueries`, `customQueries`) maupun di query widget dashboard.
+
+Karena itu, pembanding boolean di query harus mengikuti dialect database seperti pada tabel berikut.
+
+| Dialect | Pembanding yang benar | Pembanding yang salah |
+|---------|-----------------------|-----------------------|
+| PostgreSQL | `is_active = true` | `is_active = 1` ditolak database |
+| MySQL, SQLite | `is_active = 'true'` | `is_active = true` atau `= 1` selalu bernilai salah tanpa error |
+| Oracle | `is_active = 'true'` | `is_active = true` ditolak dengan `ORA-00904`, `is_active = 1` ditolak dengan `ORA-01722` |
+
+Query berikut adalah contoh `datatablesQuery` untuk MySQL, SQLite, dan Oracle.
+
+```sql
+SELECT a.partner_id,
+       a.partner_name,
+       CASE WHEN a.is_active = 'true' THEN 'active' ELSE 'archived' END AS partner_status
+FROM business_partner a
+```
+
+Untuk PostgreSQL, baris `CASE` ditulis dengan `a.is_active = true`. RDF yang dipindahkan ke dialect lain perlu disesuaikan pada bagian ini. [`payload validate`](../../commands/restforge-backend/payload/validate.md#saran-tindak-lanjut) menampilkan advisory bila query RDF di MySQL, SQLite, atau Oracle membandingkan kolom boolean dengan `true`, `false`, `1`, atau `0`. [`dashboard create`](../../commands/restforge-backend/dashboard/create.md#kolom-boolean-di-query-widget) menampilkan peringatan bila query widget di MySQL atau Oracle membandingkan kolom dengan `TRUE` atau `FALSE`.
+
 ## `dateTimeFields`
 
 Deklarasi field bertipe waktu agar runtime menormalisasi input dan memformat output. Ditulis

@@ -106,11 +106,17 @@ muncul bila ada saran yang relevan, dan dilewati untuk file ber-status `[ERROR]`
 |----------|--------|-------|
 | Foreign key belum di-surface sebagai JOIN | Tabel punya foreign key dan payload belum memakai JOIN (tidak ada `viewQuery`) | `npx restforge payload sync --table=<NAME> --expand-fk` |
 | `is_active` ada tetapi `defaultScope` belum lengkap | Kolom `is_active` ada di `fieldName` tetapi `defaultScope` belum memuat `is_active` di `lookup` dan `read` | `npx restforge payload sync --table=<NAME>` |
+| Pembanding kolom boolean tidak cocok dengan dialect | Di MySQL, SQLite, atau Oracle, SQL di RDF membandingkan kolom boolean dengan `true`, `false`, `1`, atau `0` | Ganti pembanding dengan teks, misalnya `a.is_active = 'true'` |
 
 Advisory foreign key dilewati bila payload sudah memakai konfigurasi JOIN (lihat
 [`payload sync --expand-fk`](./sync.md#ekspansi-foreign-key---expand-fk)). Advisory
 scope dilewati bila `defaultScope` sudah lengkap (lihat [Default Scope `is_active`
-built-in](./sync.md#default-scope-is_active-built-in)).
+built-in](./sync.md#default-scope-is_active-built-in)). Advisory boolean memeriksa
+`datatablesQuery`, `viewQuery`, `exportQuery`, `detailQuery`, `advancedQueries`,
+`nestedQueries`, dan `customQueries`, termasuk query di file SQL yang dirujuk lewat
+`file:`. Kolom yang diperiksa adalah kolom boolean milik tabel utama dan tabel di
+klausa `FROM` atau `JOIN`. Bentuk pembanding per dialect dijelaskan
+di [Kolom Boolean di Query SQL](../../../catalogs/rdf/data-source.md#kolom-boolean-di-query-sql).
 
 ## Exit Code
 
