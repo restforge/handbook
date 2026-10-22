@@ -42,12 +42,14 @@ Command berjalan interaktif melalui lima tahap berurutan:
 | `LICENSE` | sandbox built-in | License key runtime backend. Untuk production, isi via `--license` atau input manual |
 | `SERVER_ADDRESS` | `127.0.0.1` | Alamat bind REST API server |
 | `REST_API_PORT` | `3000` | Port REST API (disimpan ke env sebagai `SERVER_PORT`) |
-| `WEB_SERVER_PORT` | `8000` | Port frontend app (dipakai oleh `npx serve`) |
+| `WEB_SERVER_PORT` | `8000` | Port frontend app (dipakai oleh [`frontend serve`](./frontend/serve.md)) |
 | `DB_TYPE` | `postgresql` | Pilihan: `postgresql`, `mysql`, `oracle`, `sqlite` |
 | `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` | menyesuaikan `DB_TYPE` | Kredensial database (non-sqlite). Default port/user mengikuti dialect yang dipilih |
 | `DB_NAME` (sqlite) | `./data/sandbox.db` | Path file database (hanya bila `DB_TYPE=sqlite`) |
 
 Pada mode `sqlite`, parameter `DB_HOST`, `DB_PORT`, `DB_USER`, dan `DB_PASSWORD` diabaikan. Seluruh nilai hasil input ditulis ke `config/<--config>` (file di-`init` lebih dulu bila belum ada).
+
+Dialect Oracle membutuhkan driver `oracledb`, yang tidak ikut terpasang bersama `@restforgejs/platform` karena membawa install script. Pasang driver ini di folder project dengan `npm install oracledb`, lalu tambahkan `"allowScripts": { "oracledb": true }` ke `package.json` project agar npm tidak menampilkan warning allow-scripts. `npx create-restforge-app --db=oracle` mengerjakan keduanya secara otomatis. Tanpa driver ini, command dan runtime server berhenti dengan pesan yang menyebut `npm install oracledb`.
 
 ## Pilihan Scope
 
@@ -79,7 +81,7 @@ Bila scope mencakup frontend, pipeline berikut dijalankan setelahnya:
 | `[F1/2]` | Migrate RDF → UDF: `payload migrate` per tabel (tabel pure-parent dilewati karena ditemukan secara otomatis via JOIN dari child) |
 | `[F2/2]` | Generate: `npx restforge-designer generate` aplikasi frontend |
 
-Di akhir, command menawarkan menjalankan runtime server (membuka window baru dan menunggu health check) dan frontend app (`npx serve`) di window terpisah.
+Di akhir, command menawarkan menjalankan runtime server (membuka window baru dan menunggu health check) dan frontend app (`npx restforge frontend serve`) di window terpisah.
 
 ## Mode Sync dan Overwrite
 

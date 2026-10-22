@@ -14,7 +14,7 @@ Tiga pengecualian terhadap pattern resource-first:
 - **Command runtime server** dipanggil langsung tanpa prefix `runtime`, mis. `npx restforge serve`.
 - **Internal binary** (`restforge-consumer`, `restforge-consumer-deploy`) adalah binary independen.
 
-Seluruh command dijalankan dengan `npx restforge ...` dari dalam folder project, sehingga binary selalu ter-resolve dari instalasi lokal project tersebut. Instalasi global (`npm install -g @restforgejs/platform`) tidak didukung dan ditolak, baik saat instalasi maupun saat binary dari salinan global dijalankan. Jalur instalasi adalah lokal per project: `npx create-restforge-app` untuk project baru (membuat folder project sekaligus install `@restforgejs/platform` lokal), atau `npm install @restforgejs/platform` pada folder project yang sudah ada.
+Seluruh command dijalankan dengan `npx restforge ...` dari dalam folder project, sehingga binary selalu diambil dari instalasi lokal project tersebut. Instalasi global (`npm install -g @restforgejs/platform`) tidak didukung, sehingga setiap binary dari salinan global menolak berjalan. Jalur instalasi adalah lokal per project: `npx create-restforge-app` untuk project baru (membuat folder project sekaligus install `@restforgejs/platform` lokal), atau `npm install @restforgejs/platform` pada folder project yang sudah ada.
 
 ## Verb Global
 
@@ -56,6 +56,7 @@ Setiap resource memiliki satu atau lebih verb. Detail flag per verb ada di folde
 | `catalog` | `field-validation`, `query-declarative`, `dashboard`, `dbschema` | Introspeksi spesifikasi RESTForge (output JSON catalog) | [`catalog/`](./catalog/) |
 | `project` | `list`, `delete`, `auth`, `sdk`, `tenant` | Operasi level project | [`project/`](./project/) |
 | `auth-service` | `init`, `bootstrap`, `link`, `manifest`, `provision` | Layanan auth berbasis RBAC per aplikasi | [`auth-service/`](./auth-service/) |
+| `frontend` | `serve` | Menjalankan aplikasi frontend hasil designer sebagai static file server | [`frontend/`](./frontend/) |
 
 ## Binary Kafka Consumer
 

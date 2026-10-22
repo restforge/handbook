@@ -135,7 +135,7 @@ Pencatatannya memakai Redis: setiap key hasil `/upload` masuk ke daftar pending,
 | `UPLOAD_CLEANUP_CRON` | `0 */6 * * *` | Jadwal cleanup, secara default setiap 6 jam |
 | `UPLOAD_CLEANUP_THRESHOLD` | `86400` | Umur minimal file pending dalam detik sebelum dianggap orphan, secara default 24 jam |
 
-Job terjadwal hanya didaftarkan saat startup apabila `STORAGE_ENABLED=true`. Koneksi Redis untuk job ini memakai variable Redis yang berlaku di project (`REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`). Pembersihan yang sama dapat dipicu manual kapan saja lewat endpoint [`/upload-cleanup`](../../api-spec/endpoint-upload.md#cleanup-orphan-post-upload-cleanup).
+Job terjadwal hanya didaftarkan saat startup apabila `STORAGE_ENABLED=true`. Job ini berjalan di atas `bullmq`, yang tidak ikut terpasang bersama `@restforgejs/platform`, sehingga project perlu menjalankan `npm install bullmq` sekali. Tanpa paket itu, runtime server berhenti saat startup dengan pesan yang menyebut `npm install bullmq`. Koneksi Redis untuk job ini memakai variable Redis yang berlaku di project (`REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`). Pembersihan yang sama dapat dipicu manual kapan saja lewat endpoint [`/upload-cleanup`](../../api-spec/endpoint-upload.md#cleanup-orphan-post-upload-cleanup).
 
 Key yang gagal dihapus dari storage tetap berada di daftar pending, sehingga akan dicoba lagi pada siklus cleanup berikutnya.
 

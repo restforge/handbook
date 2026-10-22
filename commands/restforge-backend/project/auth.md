@@ -35,7 +35,7 @@ Command ini mengeksekusi langkah berikut secara berurutan:
 3. Tulis middleware + router auth
 4. Tulis 7 processor: `register`, `login`, `google`, `refresh`, `logout`, `me`, `reset-password`
 5. Inject variabel env auth (`JWT_SECRET` acak, `GOOGLE_CLIENT_ID` kosong) ke file config
-6. Catat dependency `bcrypt` + `jsonwebtoken` ke `package.json` project
+6. Catat dependency `bcryptjs` + `jsonwebtoken` ke `package.json` project
 
 ## Alur Tenant dan Kepemilikan
 

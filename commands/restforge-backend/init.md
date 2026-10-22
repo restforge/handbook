@@ -49,6 +49,8 @@ Tekan Enter pada setiap prompt untuk memakai nilai default.
 
 Pada mode `sqlite`, parameter `DB_HOST`, `DB_PORT`, `DB_USER`, dan `DB_PASSWORD` diabaikan. Seluruh nilai input diterapkan ke template `db-connection.env`; baris konfigurasi lain (Redis, Kafka, Logging, dll.) tetap memakai nilai default template.
 
+Dialect Oracle membutuhkan driver `oracledb`, yang tidak ikut terpasang bersama `@restforgejs/platform` karena membawa install script. Pasang driver ini di folder project dengan `npm install oracledb`, lalu tambahkan `"allowScripts": { "oracledb": true }` ke `package.json` project agar npm tidak menampilkan warning allow-scripts. `npx create-restforge-app --db=oracle` mengerjakan keduanya secara otomatis. Tanpa driver ini, command dan runtime server berhenti dengan pesan yang menyebut `npm install oracledb`.
+
 ## File yang Di-generate
 
 | Path | Keterangan |
