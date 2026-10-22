@@ -84,7 +84,7 @@ Scope `form` berguna untuk:
 | `index.html` | Homepage atau redirect ke `homepage` page |
 | `js/common.js` | Utility bersama (notifikasi, format, validasi) |
 | `css/global-list.css` | Design system CSS |
-| `app-start.bat` | Script Windows untuk run `npx serve -l <port>` di port dari `appConfig.port` |
+| `app-start.bat` | Script Windows untuk run `npx restforge frontend serve --port=<port>` di port dari `appConfig.port` |
 
 ### Per-Page Files
 
@@ -172,7 +172,9 @@ cd ./apps/contact-mgmt-app
 app-start.bat
 ```
 
-Script `app-start.bat` menjalankan `npx serve -l <port>` di port yang ditentukan oleh `appConfig.port` di UDF. Default port: `8080`.
+Script `app-start.bat` menjalankan [`npx restforge frontend serve --port=<port>`](../restforge-backend/frontend/serve.md) di port yang ditentukan oleh `appConfig.port` di UDF. Default port: `8080`.
+
+Server hanya menerima koneksi dari komputer yang sama. Agar aplikasi bisa dibuka dari komputer lain di jaringan, jalankan `npx restforge frontend serve --port=<port> --server-address=0.0.0.0` dari folder aplikasi.
 
 URL aplikasi: `http://localhost:<port>/index.html`.
 

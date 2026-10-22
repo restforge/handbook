@@ -126,7 +126,7 @@ Contoh template `app-start.bat.j2`:
 @echo off
 echo Starting application...
 echo Open http://localhost:{{ appConfig.port | default(8080) }}/index.html in your browser
-npx serve . -l {{ appConfig.port | default(8080) }}
+npx restforge frontend serve --port={{ appConfig.port | default(8080) }}
 ```
 
 ## Validasi Plugin Custom

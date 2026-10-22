@@ -133,9 +133,9 @@ Reverse proxy yang melayani frontend pada port non-standar, misalnya `https://ap
 
 ## Tip Pemilihan `port`
 
-Nilai `port` hanya memengaruhi HTTP server statis yang dijalankan oleh `app-start.bat` (memakai `npx serve`). Properti ini **tidak** memengaruhi `apiBaseUrl` atau koneksi ke backend API.
+Nilai `port` hanya memengaruhi static file server yang dijalankan `app-start.bat` lewat [`npx restforge frontend serve`](../../commands/restforge-backend/frontend/serve.md). Properti ini **tidak** memengaruhi `apiBaseUrl` atau koneksi ke backend API.
 
-Jika port sudah dipakai proses lain, `npx serve` akan gagal dengan error `EADDRINUSE`. Solusinya: ubah `port`, generate ulang aplikasi, lalu jalankan kembali script start.
+Jika port sudah dipakai proses lain, server berhenti dengan error `Port <port> is already in use`. Solusinya: ubah `port`, generate ulang aplikasi, lalu jalankan kembali script start.
 
 ## Tip Pemilihan `plugin`
 

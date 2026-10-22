@@ -70,7 +70,7 @@ npx restforge-designer init --plugin=vanilla-js-basic --output=./myapp --overwri
 | File/Folder | Fungsi |
 |-------------|--------|
 | `payload/<app-code>.json` | UDF sample sesuai plugin |
-| `app-start.bat` | Script Windows untuk run `npx serve` di port yang ditentukan |
+| `app-start.bat` | Script Windows untuk run `npx restforge frontend serve` di port yang ditentukan |
 | `README.md` | Petunjuk dasar project |
 | Folder plugin files | Aset dari plugin (CSS, vendor JS, dll. — bergantung plugin) |
 
