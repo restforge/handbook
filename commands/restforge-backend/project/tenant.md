@@ -95,6 +95,8 @@ npx restforge endpoint create --project=myapp --name=supplier --payload=supplier
 
 Aktivasi ulang hanya diperlukan untuk tabel yang sudah ada di database tanpa kolom `tenant_id`, karena baris di dalamnya perlu diisi tenant. `schema migrate` menampilkan peringatan untuk tabel seperti ini.
 
+Setelah aktivasi, dan setiap kali tabel, RDF, atau processor ditambahkan, [`project verify`](./verify.md) memeriksa ulang seluruh aturan ini, termasuk SQL processor dan dashboard yang ditulis sendiri.
+
 ## Deaktivasi
 
 `--deactivate` menulis `TENANT_MODE=single`, melepas `requestScope` tenant dari RDF, lalu membuat ulang endpoint `--project`. Kolom `tenant_id` beserta isinya, unique per tenant, `TENANT_COLUMN`, dan `TENANT_BYPASS_ROLES` tetap ada. Aktivasi berikutnya tidak perlu mengisi tenant untuk baris lama lagi.
@@ -122,4 +124,4 @@ Setelah aktivasi atau deaktivasi, server yang sedang berjalan perlu dijalankan u
 
 ---
 
-**Lihat juga**: [`project/`](./) · [`schema migrate`](../schema/migrate.md) · [`payload generate`](../payload/generate.md) · [`commands/`](../) · [`README`](../../../README.md)
+**Lihat juga**: [`project/`](./) · [`project verify`](./verify.md) · [`schema migrate`](../schema/migrate.md) · [`payload generate`](../payload/generate.md) · [`commands/`](../) · [`README`](../../../README.md)
