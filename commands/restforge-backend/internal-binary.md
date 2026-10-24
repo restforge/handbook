@@ -74,6 +74,8 @@ npx restforge-consumer-deploy --project=my-app --config=config/db.env --output=.
 npx restforge-consumer-deploy --project=my-app --consumer=order-events --config=config/db.env --force
 ```
 
+Setiap proses di ecosystem config memuat `stop_exit_codes: [78]`. Consumer yang gagal start karena error konfigurasi, misalnya file `--config` tidak ditemukan atau consumer tidak ada, berhenti dengan exit code `78` sehingga PM2 tidak menjalankannya ulang. Penjelasan exit code ada di [`runtime/serve`](./runtime/serve.md#exit-code).
+
 ---
 
 **Lihat juga**: [`commands/`](./) · [`kafka/consumer-create`](./kafka/consumer-create.md) · [`README`](../README.md)
