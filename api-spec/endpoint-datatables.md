@@ -312,6 +312,40 @@ Endpoint `/datatables` menentukan sumber query dengan resolusi **2 tingkat**:
 | TTL | Default 300 detik (configurable via `CACHE_TTL`) |
 | Invalidasi | Otomatis setelah operasi `create`, `update`, atau `delete` |
 
+## Field Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Setiap baris di `data` mendapat tiga field berikut, dan field tersebut tidak perlu ditulis di `fieldName`.
+
+| Field | Tipe | Keterangan |
+|-------|------|------------|
+| `is_lock` | boolean | `true` bila status dokumen final, atau ada perujuk yang statusnya bukan void |
+| `lock_reason` | string atau `null` | Label status final seperti `Received`, `Used by <nomor>` untuk perujuk dengan nomor terkecil, atau `Used by another document` bila perujuk hanya dari tenant lain. `null` bila tidak terkunci |
+| `document_version` | integer atau `null` | Nilai `versionField` header. Pada RDF baris (`partOf`), nilainya diambil dari header baris itu. `null` bila SDF tidak menulis `versionField` |
+
+Dua baris pada `data` tampil seperti berikut. Field lain pada baris dipersingkat.
+
+```json
+[
+  {
+    "doc_number": "PO-2026-0005",
+    "status": "draft",
+    "is_lock": false,
+    "lock_reason": null,
+    "document_version": 1
+  },
+  {
+    "doc_number": "PO-2026-0007",
+    "status": "ordered",
+    "is_lock": true,
+    "lock_reason": "Used by GR-2026-0003",
+    "document_version": 3
+  }
+]
+```
+
+
+`recordsTotal`, `recordsFiltered`, dan urutan baris tidak berubah. Cache datatables tidak dipakai pada RDF ber-`documentLock`, karena `is_lock` bergantung pada tabel perujuk. Primary key wajib ada di `fieldName` atau di `datatablesQuery` eksplisit.
+
 ---
 
 ## Fitur Terkait
@@ -322,3 +356,4 @@ Endpoint `/datatables` menentukan sumber query dengan resolusi **2 tingkat**:
 | Sort Column | — | Format dan perilaku pengurutan data |
 | Cache | — | Konfigurasi dan perilaku cache Redis |
 | Query Declarative | — | Konfigurasi datatablesQuery dan sumber data |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Field `is_lock`, `lock_reason`, dan `document_version` pada RDF ber-`documentLock` |

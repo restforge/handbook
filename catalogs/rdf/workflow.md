@@ -36,6 +36,12 @@ Konfigurasi endpoint `/change-status` untuk state machine dengan validasi transi
 }
 ```
 
+## Dukungan Dialect
+
+Endpoint `/change-status` tersedia di PostgreSQL, MySQL, Oracle, dan SQLite dengan kontrak yang sama, termasuk hook workflow dan event component engine. Di keempat dialect, dua perubahan status yang berjalan bersamaan pada record yang sama hanya meloloskan satu transisi, dan yang kalah dijawab `422 Status transition not allowed`.
+
+Pada RDF ber-[`documentLock`](./document-lock.md), `change-status` ke status void ditolak `409 Document locked` bila dokumen terkunci. Transisi lain tetap dinilai `transitions`.
+
 ## Properti Top-Level `workflow`
 
 | Property | Tipe | Default | Keterangan |

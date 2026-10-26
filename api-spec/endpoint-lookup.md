@@ -542,6 +542,33 @@ Lookup **selalu** menerapkan default scope jika dikonfigurasi di payload. Hal in
 | POST (static) | Ya |
 | POST (filtered) | Ya |
 
+## `document_version` pada Lookup
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Setiap item mendapat field `document_version`, yaitu nilai `versionField` header. Item juga membawa field yang sama di dalam `row` bila response memuat `row`. Field `is_lock` dan `lock_reason` tidak ditambahkan pada lookup.
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": "po_0007",
+      "text": "PO-2026-0007",
+      "document_version": 3,
+      "row": {
+        "purchase_order_id": "po_0007",
+        "doc_number": "PO-2026-0007",
+        "document_version": 3
+      }
+    }
+  ],
+  "search": "PO-2026",
+  "timestamp": "2026-10-25T09:10:00.000Z"
+}
+```
+
+Pada lookup tabel baris dokumen (RDF `partOf`), nilainya adalah versi header baris itu, sehingga form perujuk yang memilih baris tetap mendapat versi header yang harus dikirim. Item mendapat `null` bila SDF tidak menulis `versionField`. Form perujuk mengirim nilai ini lewat `options.documentVersions` (lihat [`/create`](./endpoint-create.md#versi-dokumen-yang-dirujuk-optionsdocumentversions)).
+
 ---
 
 ## Fitur Terkait
@@ -551,3 +578,4 @@ Lookup **selalu** menerapkan default scope jika dikonfigurasi di payload. Hal in
 | Default Scope | — | Filter otomatis agar lookup hanya menampilkan data aktif |
 | Cache | — | Konfigurasi dan perilaku cache Redis (3 tipe lookup) |
 | Sort Column | — | Pengurutan data dalam lookup filtered/static |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Field `is_lock`, `lock_reason`, dan `document_version` pada RDF ber-`documentLock` |

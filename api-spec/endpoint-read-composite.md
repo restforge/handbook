@@ -220,6 +220,43 @@ Properti `detailQuery` bersifat opsional. Bila tidak dideklarasikan, detail diba
 | Cache | Tidak | Tidak | Ya |
 | JOIN di detail | Via `detailQuery` | — | — |
 
+## Field Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Setiap record header di `data` mendapat tiga field berikut. Item detail tidak mendapat field tersebut.
+
+| Field | Tipe | Keterangan |
+|-------|------|------------|
+| `is_lock` | boolean | `true` bila status dokumen final, atau ada perujuk yang statusnya bukan void |
+| `lock_reason` | string atau `null` | Label status final seperti `Received`, `Used by <nomor>` untuk perujuk dengan nomor terkecil, atau `Used by another document` bila perujuk hanya dari tenant lain. `null` bila tidak terkunci |
+| `document_version` | integer atau `null` | Nilai `versionField` header. Pada RDF baris (`partOf`), nilainya diambil dari header baris itu. `null` bila SDF tidak menulis `versionField` |
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "vendor_bill_id": "vb_0001",
+      "doc_number": "VB-2026-0001",
+      "status": "posted",
+      "is_lock": true,
+      "lock_reason": "Posted",
+      "document_version": 2,
+      "vendor_bill_item": [
+        {
+          "vendor_bill_item_id": "vbi_0001",
+          "quantity": 5
+        }
+      ]
+    }
+  ],
+  "timestamp": "2026-10-25T09:10:00.000Z"
+}
+```
+
+
+Field kunci dihitung untuk header dokumen. Field header dan item detail lain pada contoh dipersingkat.
+
 ---
 
 ## Fitur Terkait
@@ -227,3 +264,4 @@ Properti `detailQuery` bersifat opsional. Bila tidak dideklarasikan, detail diba
 | Fitur | Dokumen | Relevansi |
 |-------|---------|-----------|
 | CRUD Composite (Deep Dive) | — | Dokumentasi lengkap master-detail |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Field `is_lock`, `lock_reason`, dan `document_version` pada RDF ber-`documentLock` |

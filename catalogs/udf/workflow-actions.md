@@ -274,7 +274,7 @@ Workflow biasanya dikombinasikan dengan `fieldStates` untuk mengunci baris setel
 }
 ```
 
-Lihat [`field-states.md`](./field-states.md) untuk detail.
+Lihat [`field-states.md`](./field-states.md) untuk detail. Aksi yang menuju status void juga bisa dimatikan pada dokumen yang sudah dirujuk dokumen lain lewat [`documentLock`](./document-lock.md).
 
 ## Tombol Standar vs Workflow Actions
 

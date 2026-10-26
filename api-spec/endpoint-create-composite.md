@@ -307,6 +307,39 @@ Dikonfigurasi via `headerCalculations`:
 }
 ```
 
+## Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLockTargets`](../catalogs/rdf/document-lock.md#blok-documentlocktargets). Foreign key di header dan di item detail yang menunjuk dokumen lain diperiksa sebelum satu baris pun disimpan. Format request, aturan, dan response error dijelaskan di [`/create`](./endpoint-create.md#versi-dokumen-yang-dirujuk-optionsdocumentversions).
+
+Untuk foreign key yang menunjuk baris dokumen, kunci pada `options.documentVersions` tetap berupa id header di tabel yang dikunci, bukan id baris.
+
+```json
+{
+  "data": {
+    "vendor_bill": {
+      "doc_number": "VB-2026-0002",
+      "purchase_order_id": "po_0007",
+      "vendor_bill_item": [
+        {
+          "line_number": 1,
+          "purchase_order_item_id": "poi_0013",
+          "quantity": 5
+        }
+      ]
+    }
+  },
+  "options": {
+    "documentVersions": {
+      "purchase_order": {
+        "po_0007": 3
+      }
+    }
+  }
+}
+```
+
+Versi yang tidak dikirim dijawab `400`, versi yang berbeda dijawab `409 Conflict`, dan header yang tidak ditemukan dijawab `400 FOREIGN_KEY_VIOLATION`. Request ini atomik, sehingga kesalahan pada salah satu item membatalkan seluruh request.
+
 ---
 
 ## Fitur Terkait
@@ -317,3 +350,4 @@ Dikonfigurasi via `headerCalculations`:
 | Field Validation | — | Validasi field header dan detail |
 | Cache | — | Invalidasi cache setelah create berhasil |
 | Body Options | — | Opsi tambahan via format `{data, options}` |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Dokumen terkunci ditolak `409 Document locked`, dan dokumen perujuk memeriksa versi dokumen yang dirujuk |

@@ -106,6 +106,10 @@ Ringkasan:
 
 RDF tanpa blok `concurrency` menghasilkan output generate yang identik dengan sebelum fitur ini ada; tidak ada `SELECT` tambahan, tidak ada syarat versi, tidak ada perubahan pada endpoint mana pun.
 
+## Header Dokumen Transaksi
+
+Header dokumen yang menulis `versionField` di blok [`document`](../sdf/document.md) mendapat blok `concurrency` secara otomatis dari `payload generate`, dengan `versionColumn` sama dengan `versionField` dan `compare: "version"`. Versi itu juga dipakai kunci dokumen untuk memeriksa dokumen yang dirujuk lewat `options.documentVersions`. Penjelasan lengkapnya ada di [`document-lock.md`](./document-lock.md).
+
 ## Tabel Dukungan Dialect
 
 | `compare` | PostgreSQL | MySQL | Oracle | SQLite |
@@ -121,4 +125,4 @@ RDF tanpa blok `concurrency` menghasilkan output generate yang identik dengan se
 
 ---
 
-**Lihat juga**: [`field-policy.md`](./field-policy.md) · [`rdf/`](./) · [`catalogs/`](../) · [`README`](../../README.md)
+**Lihat juga**: [`field-policy.md`](./field-policy.md) · [`document-lock.md`](./document-lock.md) · [`rdf/`](./) · [`catalogs/`](../) · [`README`](../../README.md)

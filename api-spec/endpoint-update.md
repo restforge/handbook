@@ -447,6 +447,40 @@ Request masuk
   → Response 200
 ```
 
+## Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Setelah transaksi dibuka, header dokumen dikunci lebih dulu, lalu status dan perujuknya dinilai.
+
+### 409 — Document Locked
+
+Response memakai HTTP status `409 Conflict`. Error ini terjadi ketika dokumen sudah final atau sudah dirujuk dokumen lain yang statusnya bukan void. Operasi ditolak sebelum hook `onBefore*` dipanggil, dan tidak ada data yang berubah.
+
+```json
+{
+  "success": false,
+  "error": "Document locked",
+  "message": "Cannot update: document is locked. Used by GR-2026-0003",
+  "details": {
+    "is_lock": true,
+    "lock_reason": "Used by GR-2026-0003"
+  },
+  "timestamp": "2026-10-25T09:15:00.000Z"
+}
+```
+
+`details.lock_reason` berisi `Used by <nomor>` bila dokumen dirujuk, atau label status final seperti `Received` bila statusnya sudah final. Kata kerja di awal `message` mengikuti action, yaitu `update` pada endpoint ini.
+
+`update` tanpa perubahan nilai pada dokumen terkunci tetap dijawab `409`, bukan `noChanges`. Pada RDF dengan `documentLock` berbentuk `partOf` (endpoint baris), penolakan berlaku saat header baris itu terkunci.
+
+### Kenaikan Versi
+
+Setiap penulisan yang berhasil menaikkan `versionField` header sebanyak 1. Pada RDF yang juga memakai [`concurrency`](../catalogs/rdf/concurrency.md), versi tetap naik 1 per penulisan, bukan 2.
+
+### Sisi Perujuk
+
+Bila RDF endpoint ini juga mendeklarasikan `documentLockTargets`, `update` memeriksa versi dokumen yang dirujuk lewat `options.documentVersions`. Format request, aturan, dan response error `400` serta `409` yang terkait dijelaskan di [`/create`](./endpoint-create.md#versi-dokumen-yang-dirujuk-optionsdocumentversions).
+Versi hanya wajib bila request mengganti nilai foreign key yang menunjuk dokumen. `update` yang tidak mengubah foreign key tersebut tidak memerlukan `options.documentVersions`.
+
 ---
 
 ## Fitur Terkait
@@ -461,3 +495,4 @@ Request masuk
 | Distributed Lock | — | Per-record WRITE locking untuk mencegah race condition |
 | Concurrency | [`../catalogs/rdf/concurrency.md`](../catalogs/rdf/concurrency.md) | Optimistic concurrency control berbasis versi baris (`options.expectedVersion`, 409 Conflict) |
 | Field Policy | [`../catalogs/rdf/field-policy.md`](../catalogs/rdf/field-policy.md) | Row locking dan audit trail per kolom pada operasi update |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Dokumen terkunci ditolak `409 Document locked`, dan dokumen perujuk memeriksa versi dokumen yang dirujuk |

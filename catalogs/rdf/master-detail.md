@@ -200,12 +200,24 @@ Setiap entry mewakili satu foreign key tabel detail ke tabel selain tabel master
 | `column` | string | Nama kolom foreign key di tabel detail |
 | `referencesTable` | string | Nama tabel yang dirujuk |
 | `referencesColumn` | string | Nama kolom yang dirujuk di tabel tersebut |
+| `displayColumn` | string atau `null` | Kolom tabel rujukan yang ditampilkan pada lookup detail. Lihat [`displayColumn`](#displaycolumn) |
 
 ```json
 "foreignKeys": [
-    { "column": "item_product_id", "referencesTable": "products", "referencesColumn": "product_id" }
+    {
+        "column": "item_product_id",
+        "referencesTable": "products",
+        "referencesColumn": "product_id",
+        "displayColumn": "name"
+    }
 ]
 ```
+
+### `displayColumn`
+
+`payload generate --detail` menulis `displayColumn` setelah `referencesColumn`. Kolomnya dipilih dengan aturan yang sama seperti ekspansi [`--expand-fk`](../../commands/restforge-backend/payload/sync.md#ekspansi-foreign-key---expand-fk), yaitu kolom bernama `name` lebih dulu, lalu kolom teks yang ber-UNIQUE. Dengan begitu lookup di grid detail memakai kolom yang sama dengan halaman mandiri tabel rujukan.
+
+Nilai `null` berarti tabel rujukan tidak punya kolom yang cocok. `payload migrate` lalu memakai primary key tabel rujukan sebagai tampilan lookup. Entri tanpa key `displayColumn`, misalnya pada RDF lama, tetap menghasilkan lookup yang sama seperti sebelumnya.
 
 ## Kontrak Kolom Tabel Detail
 

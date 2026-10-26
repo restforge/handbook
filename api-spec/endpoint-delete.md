@@ -332,6 +332,33 @@ Untuk anak restrict yang juga soft-delete, hanya row anak yang masih **aktif** y
 
 Record yang ter-soft-delete tidak muncul lagi di endpoint read (sesuai `visibility`, default `active_only`) dan dapat dikembalikan melalui endpoint [`/restore`](endpoint-restore.md).
 
+## Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Header dokumen dikunci setelah transaksi dibuka, sebelum hook `onBeforeDelete` dipanggil.
+
+### 409 — Document Locked
+
+Response memakai HTTP status `409 Conflict`. Error ini terjadi ketika dokumen sudah final atau sudah dirujuk dokumen lain yang statusnya bukan void. Operasi ditolak sebelum hook `onBefore*` dipanggil, dan tidak ada data yang berubah.
+
+```json
+{
+  "success": false,
+  "error": "Document locked",
+  "message": "Cannot delete: document is locked. Used by GR-2026-0003",
+  "details": {
+    "is_lock": true,
+    "lock_reason": "Used by GR-2026-0003"
+  },
+  "timestamp": "2026-10-25T09:15:00.000Z"
+}
+```
+
+`details.lock_reason` berisi `Used by <nomor>` bila dokumen dirujuk, atau label status final seperti `Received` bila statusnya sudah final. Kata kerja di awal `message` mengikuti action, yaitu `delete` pada endpoint ini.
+
+Perujuk yang berstatus void tidak lagi mengunci dokumen, tetapi barisnya masih ada. `Delete` atas dokumen seperti itu tetap dijawab `409 Foreign key constraint` oleh foreign key (lihat bagian [Foreign Key Constraint](#409--foreign-key-constraint)), dengan `details.references` berisi tabel perujuk.
+
+Pada RDF ber-`softDelete` (PostgreSQL), soft delete atas dokumen terkunci juga dijawab `409 Document locked`. Pada endpoint baris, penolakan berlaku saat header baris itu terkunci.
+
 ---
 
 ## Fitur Terkait
@@ -343,3 +370,4 @@ Record yang ter-soft-delete tidak muncul lagi di endpoint read (sesuai `visibili
 | Body Options | — | Opsi tambahan via format `{data, options}` |
 | Distributed Lock | — | Per-record WRITE locking untuk mencegah race condition |
 | Soft-Delete | [`catalogs/rdf/soft-delete.md`](../catalogs/rdf/soft-delete.md) | Override `/delete` menjadi penandaan flag + endpoint `/restore` |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Dokumen terkunci ditolak `409 Document locked`, dan dokumen perujuk memeriksa versi dokumen yang dirujuk |

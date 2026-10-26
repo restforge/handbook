@@ -114,6 +114,8 @@ Tanpa `versionField`, form ubah mengirim body seperti sekarang, tanpa pemeriksaa
 | `fields` | array | — | ✓ | Array definisi field (minimal 1). Lihat [`field-attributes.md`](./field-attributes.md) |
 | `fieldRows` | array | — | ✗ | Konfigurasi grid layout. Lihat [`field-rows.md`](./field-rows.md) |
 | `fieldStates` | array | — | ✗ | Status yang membuat baris readonly di menu Actions. Lihat [`field-states.md`](./field-states.md) |
+| `documentLock` | object | — | ✗ | Mematikan aksi pada dokumen terkunci. Ditulis `payload migrate` dari RDF. Lihat [`document-lock.md`](./document-lock.md) |
+| `documentLockTargets` | array | — | ✗ | Field perujuk yang mengirim versi dokumen yang dirujuk. Ditulis `payload migrate` dari RDF. Lihat [`document-lock.md`](./document-lock.md) |
 | `features` | object | `{}` | ✗ | Fitur halaman (search, filter, layout). Lihat [`features.md`](./features.md) |
 
 ### Pola Lanjutan

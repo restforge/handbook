@@ -85,6 +85,7 @@ defineModel(tableName, options)
 | `relations` | object | Tidak | Definisi foreign key relation |
 | `checks` | array | Tidak | Daftar CHECK constraint |
 | `softDelete` | object | Tidak | Aktivasi soft-delete beserta kolom reusable (lihat halaman Definisi Soft-Delete) |
+| `document` | object | Tidak | Penanda header atau baris dokumen transaksi untuk kunci dokumen (lihat halaman Definisi Dokumen Transaksi) |
 
 ## Navigasi
 
@@ -99,6 +100,7 @@ defineModel(tableName, options)
 | Definisi Composite Primary Key | [`composite-primary-key.md`](./composite-primary-key.md) |
 | Definisi Foreign Key | [`foreign-keys.md`](./foreign-keys.md) |
 | Definisi Soft-Delete | [`soft-delete.md`](./soft-delete.md) |
+| Definisi Dokumen Transaksi | [`document.md`](./document.md) |
 | Kebijakan Inverse Relation | [`relations.md`](./relations.md) |
 | Schema Namespace (Multi-Schema) | [`multi-schema.md`](./multi-schema.md) |
 | Konvensi Penamaan | [`naming-convention.md`](./naming-convention.md) |

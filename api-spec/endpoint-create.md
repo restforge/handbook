@@ -331,6 +331,105 @@ Jika component engine dikonfigurasi, endpoint `/create` menjalankan event hooks 
 
 Handler `onBeforeInsert` dan `onAfterInsert` berjalan di dalam transaction, termasuk query yang dijalankan lewat `services.db`, sehingga penolakan di salah satunya membatalkan seluruh perubahan. Handler `onAfterCommitInsert` hanya dipanggil setelah COMMIT berhasil, dan kegagalannya tidak mengubah response.
 
+## Kunci Dokumen
+
+Bagian ini berlaku bila RDF endpoint mendeklarasikan blok [`documentLockTargets`](../catalogs/rdf/document-lock.md#blok-documentlocktargets), yaitu dokumen yang merujuk dokumen lain, misalnya penerimaan barang yang merujuk PO. Pada RDF ber-`documentLock` berbentuk `partOf` (endpoint baris), `create` juga ditolak `409 Document locked` bila header-nya terkunci, dengan kata kerja `create` pada `message`.
+
+### Versi Dokumen yang Dirujuk (`options.documentVersions`)
+
+Client mengirim versi dokumen yang dirujuk lewat `options.documentVersions`, yaitu peta dari nama tabel header ke peta id header dan versinya. Versi dibaca dari field `document_version` pada response [`/lookup`](./endpoint-lookup.md#document_version-pada-lookup) atau [`/first`](./endpoint-first.md#field-kunci-dokumen).
+
+```json
+{
+  "data": {
+    "purchase_order_id": "po_0007",
+    "doc_number": "GR-2026-0003",
+    "doc_date": "2026-10-25"
+  },
+  "options": {
+    "documentVersions": {
+      "purchase_order": {
+        "po_0007": 3
+      }
+    }
+  }
+}
+```
+
+Pemeriksaan berjalan setelah header yang dirujuk dikunci dan sebelum hook `onBefore*` dipanggil.
+
+- Versi wajib untuk setiap nilai foreign key yang menunjuk dokumen.
+- Versi berupa angka bulat atau string angka. Nilai lain dijawab `400`.
+- Hanya header yang dirujuk yang dikunci, dan pembuatan dokumen perujuk tidak menaikkan versi header itu.
+- Pada project multi tenant, dokumen tujuan milik tenant lain diperlakukan seperti tidak ditemukan.
+
+### Response Error Kunci Dokumen
+
+#### 400 — Versi Dokumen Tidak Dikirim
+
+```json
+{
+  "success": false,
+  "error": "Bad Request",
+  "message": "options.documentVersions must include the version of purchase_order 'po_0007'",
+  "timestamp": "2026-10-25T09:20:00.000Z"
+}
+```
+
+Versi yang bukan angka bulat dijawab dengan bentuk yang sama dan pesan `options.documentVersions for purchase_order 'po_0007' must be an integer`.
+
+#### 400 — Dokumen yang Dirujuk Tidak Ditemukan
+
+Terjadi ketika header tujuan tidak ada, atau milik tenant lain. Dokumen tujuan tidak ikut terkunci.
+
+```json
+{
+  "success": false,
+  "error": "Foreign key constraint",
+  "code": "FOREIGN_KEY_VIOLATION",
+  "message": "Referenced data not found",
+  "details": {
+    "purchase_order_id": ["Referenced data not found"]
+  },
+  "timestamp": "2026-10-25T09:20:00.000Z"
+}
+```
+
+#### 409 — Conflict (Versi Dokumen yang Dirujuk Berbeda)
+
+Terjadi ketika dokumen yang dirujuk diubah pihak lain sejak client membacanya. Data tidak disimpan.
+
+```json
+{
+  "success": false,
+  "error": "Conflict",
+  "message": "The referenced document PO-2026-0007 was modified by another user after you opened it.",
+  "details": {
+    "table": "purchase_order",
+    "id": "po_0007",
+    "doc_number": "PO-2026-0007",
+    "expectedVersion": 3,
+    "currentVersion": 4
+  },
+  "timestamp": "2026-10-25T09:20:00.000Z"
+}
+```
+
+`details.table` dan `details.id` membedakan response ini dari [konflik versi baris](./endpoint-update.md#409--conflict-versi-baris-berbeda) milik dokumen yang sedang disimpan.
+
+#### 409 — Document Busy
+
+Terjadi ketika dokumen yang dirujuk sedang dipakai transaksi lain dan terjadi deadlock atau waktu tunggu kunci habis. Request aman diulang.
+
+```json
+{
+  "success": false,
+  "error": "Document busy",
+  "message": "Document is being modified by another request. Please retry.",
+  "timestamp": "2026-10-25T09:20:00.000Z"
+}
+```
+
 ---
 
 ## Fitur Terkait
@@ -343,3 +442,4 @@ Handler `onBeforeInsert` dan `onAfterInsert` berjalan di dalam transaction, term
 | Component Engine | [`../features/component-engine/README.md`](../features/component-engine/README.md) | Event lifecycle hooks (onBeforeInsert, onAfterInsert, onAfterCommitInsert) |
 | Body Options | — | Opsi tambahan via format `{data, options}` |
 | Distributed Lock | — | Per-record locking (tidak berlaku untuk create) |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Dokumen terkunci ditolak `409 Document locked`, dan dokumen perujuk memeriksa versi dokumen yang dirujuk |

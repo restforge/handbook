@@ -128,6 +128,8 @@ Berikut daftar lengkap field top-level yang dikenali oleh generator. Field dikel
 | `softDeleteFkChecks` / `softDeleteFkParents` / `softDeleteFkChildren` / `softDeleteCascadeTree` | array / object | Metadata FK untuk semantik FK-aware soft-delete. Schema-derived, ditulis otomatis oleh `payload generate` |
 | `deleteReferences` | array of object | Tabel anak yang menahan penghapusan record, berbentuk `{ table, column, references }`. Dipakai response 409 [`/delete`](../../api-spec/endpoint-delete.md#409--foreign-key-constraint) untuk menyebut data perujuk beserta jumlahnya. Schema-derived, ditulis otomatis oleh `payload generate` |
 | `concurrency` | object | Optimistic concurrency control berbasis versi baris untuk `update`/`update-composite` |
+| `documentLock` | object | Kunci dokumen transaksi di header dan baris dokumen. Schema-derived dari blok `document` SDF, ditulis otomatis oleh `payload generate`. Lihat [`document-lock.md`](./document-lock.md) |
+| `documentLockTargets` | array of object | Kolom foreign key yang menunjuk dokumen lain, beserta header yang harus dikunci. Schema-derived, ditulis otomatis oleh `payload generate`. Lihat [`document-lock.md`](./document-lock.md) |
 | `fieldPolicy` | object | Strategi per-kolom untuk row locking (`lock`) dan audit trail (`audit`) pada operasi tulis |
 
 ## Navigasi
@@ -163,6 +165,7 @@ Berikut daftar lengkap field top-level yang dikenali oleh generator. Field dikel
 | Field Soft-Delete (`softDelete`) | [`soft-delete.md`](./soft-delete.md) |
 | Field Auth Guard (`authGuard`) | [`auth-guard.md`](./auth-guard.md) |
 | Field Concurrency (`concurrency`) | [`concurrency.md`](./concurrency.md) |
+| Field Kunci Dokumen (`documentLock`, `documentLockTargets`) | [`document-lock.md`](./document-lock.md) |
 | Field Policy (`fieldPolicy`) | [`field-policy.md`](./field-policy.md) |
 
 ### Field Integrasi

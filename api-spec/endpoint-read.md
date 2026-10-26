@@ -424,6 +424,40 @@ SELECT * FROM supplier WHERE is_active = true AND ... (user filters)
 
 Default scope diterapkan **sebelum** kondisi WHERE dari request body, sehingga filter dari pengguna menjadi kondisi tambahan.
 
+## Field Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Setiap baris pada kedua mode, paginasi maupun non-paginasi, mendapat tiga field berikut. Field tersebut tidak perlu ditulis di `fieldName` atau di `select`.
+
+| Field | Tipe | Keterangan |
+|-------|------|------------|
+| `is_lock` | boolean | `true` bila status dokumen final, atau ada perujuk yang statusnya bukan void |
+| `lock_reason` | string atau `null` | Label status final seperti `Received`, `Used by <nomor>` untuk perujuk dengan nomor terkecil, atau `Used by another document` bila perujuk hanya dari tenant lain. `null` bila tidak terkunci |
+| `document_version` | integer atau `null` | Nilai `versionField` header. Pada RDF baris (`partOf`), nilainya diambil dari header baris itu. `null` bila SDF tidak menulis `versionField` |
+
+Dua baris pada `data` tampil seperti berikut. Field lain pada baris dipersingkat.
+
+```json
+[
+  {
+    "doc_number": "PO-2026-0005",
+    "status": "draft",
+    "is_lock": false,
+    "lock_reason": null,
+    "document_version": 1
+  },
+  {
+    "doc_number": "PO-2026-0007",
+    "status": "ordered",
+    "is_lock": true,
+    "lock_reason": "Used by GR-2026-0003",
+    "document_version": 3
+  }
+]
+```
+
+
+Cache list tidak dipakai pada RDF ber-`documentLock`. Primary key tidak ikut bocor ke response bila tidak diminta di `select`.
+
 ---
 
 ## Fitur Terkait
@@ -435,3 +469,4 @@ Default scope diterapkan **sebelum** kondisi WHERE dari request body, sehingga f
 | Cache | — | Konfigurasi dan perilaku cache Redis |
 | Default Scope | — | Filter otomatis yang diterapkan pada setiap query |
 | Query Declarative | — | Konfigurasi viewName, viewQuery, dan sumber data |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Field `is_lock`, `lock_reason`, dan `document_version` pada RDF ber-`documentLock` |

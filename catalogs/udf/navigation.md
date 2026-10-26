@@ -305,4 +305,4 @@ Hal ini memungkinkan generate per-page tanpa harus regenerate sidebar setiap kal
 
 ---
 
-← [`field-states.md`](./field-states.md) | [Selanjutnya: `homepage.md`](./homepage.md) →
+← [`document-lock.md`](./document-lock.md) | [Selanjutnya: `homepage.md`](./homepage.md) →

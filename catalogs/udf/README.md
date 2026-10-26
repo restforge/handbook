@@ -132,6 +132,7 @@ Lihat [`page-anatomy.md`](./page-anatomy.md) untuk field lengkap per halaman CRU
 | Master Detail (`details[]`) | [`master-detail.md`](./master-detail.md) |
 | Workflow Actions (`workflow` + `workflowActions[]`) | [`workflow-actions.md`](./workflow-actions.md) |
 | Field States (`fieldStates[]`) | [`field-states.md`](./field-states.md) |
+| Document Lock (`documentLock` + `documentLockTargets[]`) | [`document-lock.md`](./document-lock.md) |
 | Sidebar Navigation Manual (`navigation`) | [`navigation.md`](./navigation.md) |
 | Homepage Default (`homepage`) | [`homepage.md`](./homepage.md) |
 | Live Sync via WebSocket (`liveSync`) | [`live-sync.md`](./live-sync.md) |

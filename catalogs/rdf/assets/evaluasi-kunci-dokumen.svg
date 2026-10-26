@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1130 330" width="1130" height="330" font-family="Segoe UI, Arial, sans-serif">
+  <title>Evaluasi kunci dokumen pada request tulis</title>
+  <desc>Setelah transaksi dibuka dan header dikunci, change-status ke status bukan void melewati kunci. Request lain ditolak 409 Document locked bila status sudah final atau ada perujuk aktif, dan sisanya lanjut ke hook dan penulisan.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f4e8c"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b42318"/>
+    </marker>
+  </defs>
+  <rect width="1130" height="330" fill="#ffffff"/>
+
+  <line x1="170" y1="110" x2="205" y2="110" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="355" y1="110" x2="390" y2="110" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="540" y1="110" x2="575" y2="110" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="725" y1="110" x2="760" y2="110" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="910" y1="110" x2="945" y2="110" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M465 80 V40 H1020 V78" fill="none" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="560" y="32" font-size="13" fill="#1f2937">ya, kunci tidak dinilai</text>
+  <line x1="650" y1="140" x2="720" y2="228" stroke="#b42318" stroke-width="2" marker-end="url(#arrow-red)"/>
+  <line x1="835" y1="140" x2="805" y2="228" stroke="#b42318" stroke-width="2" marker-end="url(#arrow-red)"/>
+
+  <text x="541" y="102" font-size="13" fill="#1f2937">tidak</text>
+  <text x="726" y="102" font-size="13" fill="#1f2937">tidak</text>
+  <text x="911" y="102" font-size="13" fill="#1f2937">tidak</text>
+  <text x="662" y="190" font-size="13" fill="#b42318">ya</text>
+  <text x="832" y="190" font-size="13" fill="#b42318">ya</text>
+
+  <rect x="20" y="80" width="150" height="60" rx="6" fill="#e8f0fb" stroke="#1f4e8c" stroke-width="2"/>
+  <text x="95" y="107" font-size="14" font-weight="700" fill="#111827" text-anchor="middle">Request tulis</text>
+  <text x="95" y="126" font-size="12" fill="#374151" text-anchor="middle">masuk ke endpoint</text>
+
+  <rect x="205" y="80" width="150" height="60" rx="6" fill="#e8f0fb" stroke="#1f4e8c" stroke-width="2"/>
+  <text x="280" y="107" font-size="14" font-weight="700" fill="#111827" text-anchor="middle">Transaksi dibuka</text>
+  <text x="280" y="126" font-size="12" fill="#374151" text-anchor="middle">header dikunci</text>
+
+  <rect x="390" y="80" width="150" height="60" rx="6" fill="#fff4d6" stroke="#9a6700" stroke-width="2"/>
+  <text x="465" y="104" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">change-status ke</text>
+  <text x="465" y="122" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">status bukan void?</text>
+
+  <rect x="575" y="80" width="150" height="60" rx="6" fill="#fff4d6" stroke="#9a6700" stroke-width="2"/>
+  <text x="650" y="115" font-size="14" font-weight="700" fill="#111827" text-anchor="middle">Status final?</text>
+
+  <rect x="760" y="80" width="150" height="60" rx="6" fill="#fff4d6" stroke="#9a6700" stroke-width="2"/>
+  <text x="835" y="104" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">Ada perujuk yang</text>
+  <text x="835" y="122" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">statusnya bukan void?</text>
+
+  <rect x="945" y="80" width="150" height="60" rx="6" fill="#e6f4ea" stroke="#1e7b34" stroke-width="2"/>
+  <text x="1020" y="104" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">Hook onBefore dan</text>
+  <text x="1020" y="122" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">penulisan berjalan</text>
+
+  <rect x="650" y="230" width="230" height="60" rx="6" fill="#fdecea" stroke="#b42318" stroke-width="2"/>
+  <text x="765" y="256" font-size="14" font-weight="700" fill="#111827" text-anchor="middle">409 Document locked</text>
+  <text x="765" y="275" font-size="12" fill="#374151" text-anchor="middle">hook tidak dipanggil</text>
+</svg>

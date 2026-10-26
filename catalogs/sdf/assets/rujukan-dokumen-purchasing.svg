@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" width="960" height="500" font-family="Segoe UI, Arial, sans-serif">
+  <title>Graf rujukan dokumen purchase_order</title>
+  <desc>good_receipt dan vendor_bill merujuk header purchase_order, vendor_bill_item merujuk baris purchase_order_item, baris milik dokumen sendiri tidak dihitung, dan stock_ledger tidak terbaca karena rujukannya tanpa foreign key.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f4e8c"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+  <rect width="960" height="500" fill="#ffffff"/>
+
+  <line x1="240" y1="100" x2="352" y2="212" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="660" y1="100" x2="548" y2="212" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="660" y1="340" x2="548" y2="382" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="760" y1="300" x2="760" y2="122" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow-gray)"/>
+  <line x1="450" y1="360" x2="450" y2="262" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow-gray)"/>
+  <line x1="240" y1="380" x2="352" y2="250" stroke="#b42318" stroke-width="1.5" stroke-dasharray="3 5"/>
+
+  <text x="262" y="150" font-size="13" fill="#1f2937" transform="rotate(45 262 150)">purchase_order_id</text>
+  <text x="560" y="160" font-size="13" fill="#1f2937" transform="rotate(-45 560 160)">purchase_order_id</text>
+  <text x="560" y="346" font-size="13" fill="#1f2937" transform="rotate(-18 560 346)">purchase_order_item_id</text>
+  <text x="772" y="215" font-size="13" fill="#4b5563">partOf: status dibaca</text>
+  <text x="772" y="232" font-size="13" fill="#4b5563">dari header tagihan</text>
+  <text x="462" y="310" font-size="13" fill="#4b5563">partOf: baris milik PO sendiri,</text>
+  <text x="462" y="327" font-size="13" fill="#4b5563">tidak dihitung</text>
+
+  <rect x="40" y="60" width="200" height="60" rx="6" fill="#e8f0fb" stroke="#1f4e8c" stroke-width="2"/>
+  <text x="140" y="87" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">good_receipt</text>
+  <text x="140" y="106" font-size="12" fill="#374151" text-anchor="middle">header dokumen</text>
+
+  <rect x="660" y="60" width="200" height="60" rx="6" fill="#e8f0fb" stroke="#1f4e8c" stroke-width="2"/>
+  <text x="760" y="87" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">vendor_bill</text>
+  <text x="760" y="106" font-size="12" fill="#374151" text-anchor="middle">header dokumen</text>
+
+  <rect x="350" y="200" width="200" height="60" rx="6" fill="#fff4d6" stroke="#9a6700" stroke-width="2.5"/>
+  <text x="450" y="227" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">purchase_order</text>
+  <text x="450" y="246" font-size="12" fill="#374151" text-anchor="middle">dokumen yang dikunci</text>
+
+  <rect x="350" y="360" width="200" height="60" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+  <text x="450" y="387" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">purchase_order_item</text>
+  <text x="450" y="406" font-size="12" fill="#374151" text-anchor="middle">baris dokumen</text>
+
+  <rect x="660" y="300" width="200" height="60" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+  <text x="760" y="327" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">vendor_bill_item</text>
+  <text x="760" y="346" font-size="12" fill="#374151" text-anchor="middle">baris dokumen</text>
+
+  <rect x="40" y="360" width="200" height="60" rx="6" fill="#fdecea" stroke="#b42318" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="140" y="387" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">stock_ledger</text>
+  <text x="140" y="406" font-size="12" fill="#374151" text-anchor="middle">tanpa blok document</text>
+  <text x="40" y="442" font-size="12" fill="#4b5563">source_doc_type dan source_doc_id</text>
+  <text x="40" y="458" font-size="12" fill="#4b5563">tidak berupa foreign key, tidak terbaca</text>
+
+  <line x1="640" y1="440" x2="690" y2="440" stroke="#1f4e8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="702" y="445" font-size="13" fill="#1f2937">dihitung sebagai perujuk</text>
+  <line x1="640" y1="466" x2="690" y2="466" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow-gray)"/>
+  <text x="702" y="471" font-size="13" fill="#1f2937">relasi ke header sendiri, tidak dihitung</text>
+</svg>

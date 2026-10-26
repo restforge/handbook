@@ -367,6 +367,33 @@ Endpoint `/adjust` memerlukan konfigurasi `adjustConfig` di payload JSON:
 | `fields.{name}.min` | number | `0` | Nilai minimum yang diperbolehkan setelah adjustment |
 | `fields.{name}.allowNegativeResult` | boolean | `true` | Jika `false`, guard clause ditambahkan ke SQL |
 
+## Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Header dokumen dikunci setelah transaksi dibuka, sebelum hook `onBeforeAdjust` dipanggil.
+
+### 409 — Document Locked
+
+Response memakai HTTP status `409 Conflict`. Error ini terjadi ketika dokumen sudah final atau sudah dirujuk dokumen lain yang statusnya bukan void. Operasi ditolak sebelum hook `onBefore*` dipanggil, dan tidak ada data yang berubah.
+
+```json
+{
+  "success": false,
+  "error": "Document locked",
+  "message": "Cannot adjust: document is locked. Used by GR-2026-0003",
+  "details": {
+    "is_lock": true,
+    "lock_reason": "Used by GR-2026-0003"
+  },
+  "timestamp": "2026-10-25T09:15:00.000Z"
+}
+```
+
+`details.lock_reason` berisi `Used by <nomor>` bila dokumen dirujuk, atau label status final seperti `Received` bila statusnya sudah final. Kata kerja di awal `message` mengikuti action, yaitu `adjust` pada endpoint ini.
+
+### Kenaikan Versi
+
+Setiap penulisan yang berhasil menaikkan `versionField` header sebanyak 1. Pada RDF yang juga memakai [`concurrency`](../catalogs/rdf/concurrency.md), versi tetap naik 1 per penulisan, bukan 2.
+
 ---
 
 ## Fitur Terkait
@@ -378,3 +405,4 @@ Endpoint `/adjust` memerlukan konfigurasi `adjustConfig` di payload JSON:
 | Distributed Lock | — | Per-record WRITE lock saat adjustment |
 | Component Engine | — | Event hooks (onBeforeAdjust, onAfterAdjust) |
 | Body Options | — | Opsi tambahan via format `{data, options}` |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Dokumen terkunci ditolak `409 Document locked`, dan dokumen perujuk memeriksa versi dokumen yang dirujuk |

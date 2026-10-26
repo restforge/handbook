@@ -262,6 +262,36 @@ Resolusi sumber data **identik** dengan endpoint `/read`:
 | Default Scope | Tidak | Ya (jika dikonfigurasi) |
 | Kegunaan | View/Edit form detail | List browsing, query kompleks |
 
+## Field Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Record yang dikembalikan mendapat tiga field berikut, dan field tersebut tidak perlu ditulis di `fieldName` atau di `select`.
+
+| Field | Tipe | Keterangan |
+|-------|------|------------|
+| `is_lock` | boolean | `true` bila status dokumen final, atau ada perujuk yang statusnya bukan void |
+| `lock_reason` | string atau `null` | Label status final seperti `Received`, `Used by <nomor>` untuk perujuk dengan nomor terkecil, atau `Used by another document` bila perujuk hanya dari tenant lain. `null` bila tidak terkunci |
+| `document_version` | integer atau `null` | Nilai `versionField` header. Pada RDF baris (`partOf`), nilainya diambil dari header baris itu. `null` bila SDF tidak menulis `versionField` |
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "doc_number": "PO-2026-0007",
+      "status": "ordered",
+      "is_lock": true,
+      "lock_reason": "Used by GR-2026-0003",
+      "document_version": 3
+    }
+  ],
+  "timestamp": "2026-10-25T09:10:00.000Z"
+}
+```
+
+
+Nilai `document_version` dari response ini dikirim form perujuk sebagai `options.documentVersions` (lihat [`/create`](./endpoint-create.md#versi-dokumen-yang-dirujuk-optionsdocumentversions)). Primary key tidak ikut bocor ke response bila tidak diminta di `select`.
+
 ---
 
 ## Fitur Terkait
@@ -270,3 +300,4 @@ Resolusi sumber data **identik** dengan endpoint `/read`:
 |-------|---------|-----------|
 | First (Deep Dive) | — | Dokumentasi lengkap endpoint first |
 | Query Declarative | — | Konfigurasi viewName, viewQuery, dan sumber data |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Field `is_lock`, `lock_reason`, dan `document_version` pada RDF ber-`documentLock` |

@@ -6,7 +6,7 @@
 
 Dokumen transaksi biasanya tidak boleh diubah lagi setelah statusnya berpindah, misalnya penerimaan barang yang sudah `posted` atau order yang sudah `paid`. `fieldStates` menyatakan status mana saja yang membuat baris menjadi readonly.
 
-Baris readonly tetap tampil di list. Item `Edit` dan `Delete` di menu Actions tampil mati, disertai ikon informasi yang menjelaskan alasannya. Karena form ubah tidak dapat dibuka, header dan line item sama-sama tidak dapat diubah. Aksi View dan aksi workflow tetap tersedia.
+Baris readonly tetap tampil di list. Item `Edit` dan `Delete` di menu Actions tampil mati, disertai ikon informasi yang menjelaskan alasannya. Karena form ubah tidak dapat dibuka, header dan line item sama-sama tidak dapat diubah. Aksi View dan aksi workflow tetap tersedia. Untuk dokumen yang terkunci karena sudah dirujuk dokumen lain, lihat [`document-lock.md`](./document-lock.md).
 
 ## Sintaks
 
@@ -151,4 +151,4 @@ async function goodReceiptBeforeCompositeUpdate(tableName, requestData, oldData)
 
 ---
 
-← [`workflow-actions.md`](./workflow-actions.md) | [Selanjutnya: `navigation.md`](./navigation.md) →
+← [`workflow-actions.md`](./workflow-actions.md) | [Selanjutnya: `document-lock.md`](./document-lock.md) →

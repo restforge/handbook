@@ -10,7 +10,7 @@
 | **URL** | `/api/{project}/{endpoint}/change-status` |
 | **Content-Type** | `application/json` |
 | **HTTP Status Sukses** | `200 OK` |
-| **Database** | PostgreSQL |
+| **Database** | PostgreSQL, MySQL, Oracle, SQLite |
 | **Parameter Wajib** | Primary key + `status` |
 | **Operasi** | `UPDATE table SET status = $1 WHERE pk = $2 RETURNING *` |
 | **Validasi Transisi** | Opsional via `workflow.transitions` |
@@ -502,6 +502,33 @@ Endpoint `/change-status` memerlukan `action.workflow = true` dan konfigurasi `w
 
 Seluruh langkah 2 sampai 10 berjalan dalam satu database transaction. Kegagalan di langkah mana pun (termasuk blocking hook) menyebabkan ROLLBACK.
 
+## Kunci Dokumen
+
+Berlaku hanya bila RDF endpoint ini mendeklarasikan blok [`documentLock`](../catalogs/rdf/document-lock.md). Header dokumen dikunci setelah transaksi dibuka, sebelum transisi dinilai.
+
+Kunci hanya menutup status tujuan yang ada di `voidStatuses`. Transisi lain tetap dinilai `workflow.transitions`, sehingga perpindahan `ordered` ke `received` pada dokumen yang sudah dirujuk tetap berhasil.
+
+### 409 — Document Locked
+
+Response memakai HTTP status `409 Conflict`. Error ini terjadi ketika dokumen sudah final atau sudah dirujuk dokumen lain yang statusnya bukan void. Operasi ditolak sebelum hook `onBefore*` dipanggil, dan tidak ada data yang berubah.
+
+```json
+{
+  "success": false,
+  "error": "Document locked",
+  "message": "Cannot cancel: document is locked. Used by GR-2026-0003",
+  "details": {
+    "is_lock": true,
+    "lock_reason": "Used by GR-2026-0003"
+  },
+  "timestamp": "2026-10-25T09:15:00.000Z"
+}
+```
+
+`details.lock_reason` berisi `Used by <nomor>` bila dokumen dirujuk, atau label status final seperti `Received` bila statusnya sudah final. Kata kerja di awal `message` mengikuti action, yaitu `cancel` pada endpoint ini.
+
+Contoh di atas berasal dari perpindahan ke status void (`cancelled`) pada dokumen yang sudah dirujuk. Setiap perubahan status yang berhasil menaikkan `versionField` header sebanyak 1.
+
 ---
 
 ## Fitur Terkait
@@ -512,3 +539,4 @@ Seluruh langkah 2 sampai 10 berjalan dalam satu database transaction. Kegagalan 
 | Distributed Lock | — | Per-record WRITE lock saat change-status |
 | Component Engine | — | Event hooks (onBeforeWorkflow, onAfterWorkflow) |
 | Body Options | — | Opsi tambahan via format `{data, options}` |
+| Kunci Dokumen | [`../catalogs/rdf/document-lock.md`](../catalogs/rdf/document-lock.md) | Dokumen terkunci ditolak `409 Document locked`, dan dokumen perujuk memeriksa versi dokumen yang dirujuk |
