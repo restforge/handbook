@@ -100,6 +100,8 @@ Bila config berisi `TENANT_MODE=multi` dan tabel memiliki kolom `tenant_id`, RDF
 
 `column` diambil dari `TENANT_COLUMN` dan `bypassRoles` dari `TENANT_BYPASS_ROLES` di config. Kolom `tenant_id` ikut masuk `fieldName` dan query datatables. Blok `requestScope` yang sudah ada di RDF tidak diubah. Tabel yang dikecualikan `project tenant --activate`, seperti tabel registry tenant dan tabel berawalan `auth.`, tidak mendapat blok ini.
 
+RDF ber-`requestScope` juga mendapat key `tenantForeignKeys`, yaitu daftar foreign key yang tabel tujuannya punya kolom `tenant_id`. Endpoint memakai daftar ini untuk menolak nilai foreign key milik tenant lain, seperti dijelaskan di [`project tenant`](../project/tenant.md#foreign-key-ke-data-tenant-lain). Key ini milik generator dan selalu ditulis ulang.
+
 Tabel baru yang dibuat [`schema migrate`](../schema/migrate.md#project-multi-tenant) pada project multi-tenant sudah memiliki kolom `tenant_id`, sehingga RDF-nya langsung bisa dipakai `endpoint create`.
 
 ## Generate Ulang pada RDF yang Sudah Ada

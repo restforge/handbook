@@ -208,6 +208,8 @@ Field `details` adalah map `{ "<field>": ["<pesan>"] }` untuk menandai field di 
 
 Terjadi ketika nilai lolos validasi aplikasi tetapi ditolak database. `code` menunjukkan jenis pelanggaran (`CHECK_VIOLATION`, `NOT_NULL_VIOLATION`, atau `FOREIGN_KEY_VIOLATION`), dan `details` menyebut field penyebabnya.
 
+Pada project multi tenant, `FOREIGN_KEY_VIOLATION` juga dipakai bila nilai foreign key menunjuk data milik tenant lain, walaupun data itu ada di database. Pemeriksaan ini dijelaskan di [`project tenant`](../commands/restforge-backend/project/tenant.md#foreign-key-ke-data-tenant-lain).
+
 ```json
 {
   "success": false,

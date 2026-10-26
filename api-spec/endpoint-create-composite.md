@@ -264,6 +264,7 @@ Aturan lengkap ada di [`catalogs/rdf/datetime-fields.md`](../catalogs/rdf/dateti
 | 400 | Ditolak handler component `onBeforeCompositeInsert` atau `onAfterCompositeInsert`. Data yang ditulis handler lewat `services.db` ikut dibatalkan, kecuali pada SQLite. Penolakan di `onAfterCommitCompositeInsert` tidak menghasilkan error | Pesan dari handler saja, tanpa nama event, nama fungsi, atau path file handler |
 | 409 | Unique constraint violation | `A record with this value already exists` |
 | 400 | Foreign key constraint (`code: FOREIGN_KEY_VIOLATION`) | `Referenced data not found`, dengan `details` per kolom bila kolom header diketahui |
+| 400 | Project multi tenant: foreign key di header atau item detail menunjuk data tenant lain (`code: FOREIGN_KEY_VIOLATION`, lihat [`project tenant`](../commands/restforge-backend/project/tenant.md#foreign-key-ke-data-tenant-lain)) | `Referenced data not found`, dengan `details` berisi nama kolom foreign key |
 | 400 | CHECK atau NOT NULL ditolak database (`code: CHECK_VIOLATION` / `NOT_NULL_VIOLATION`) | `Invalid data`, dengan `details` per field header |
 | 500 | Error database lain | `An error occurred while creating stock-inbound data` |
 

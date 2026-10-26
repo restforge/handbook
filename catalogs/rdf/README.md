@@ -130,6 +130,7 @@ Berikut daftar lengkap field top-level yang dikenali oleh generator. Field dikel
 | `concurrency` | object | Optimistic concurrency control berbasis versi baris untuk `update`/`update-composite` |
 | `documentLock` | object | Kunci dokumen transaksi di header dan baris dokumen. Schema-derived dari blok `document` SDF, ditulis otomatis oleh `payload generate`. Lihat [`document-lock.md`](./document-lock.md) |
 | `documentLockTargets` | array of object | Kolom foreign key yang menunjuk dokumen lain, beserta header yang harus dikunci. Schema-derived, ditulis otomatis oleh `payload generate`. Lihat [`document-lock.md`](./document-lock.md) |
+| `tenantForeignKeys` | array of object | Project multi tenant: kolom foreign key yang tabel tujuannya punya kolom tenant, sehingga nilainya harus milik tenant user. Schema-derived, ditulis otomatis oleh `payload generate`, `payload sync`, dan `project tenant --activate`. Lihat [`project tenant`](../../commands/restforge-backend/project/tenant.md#foreign-key-ke-data-tenant-lain) |
 | `fieldPolicy` | object | Strategi per-kolom untuk row locking (`lock`) dan audit trail (`audit`) pada operasi tulis |
 
 ## Navigasi

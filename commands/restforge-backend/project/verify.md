@@ -50,6 +50,7 @@ Pemeriksaan ini hanya berjalan saat `TENANT_MODE=multi`. Tabel yang dikecualikan
 | TEN011 | Query JOIN di RDF memilih kolom tenant milik tabel utama | Error |
 | TEN012 | RDF tabel user auth extension melindungi kolom `role` lewat `requestScope.protectedColumns` | Error |
 | TEN013 | Endpoint tabel ber-tenant sudah dibuat ulang dengan filter tenant, termasuk endpoint yang dibuat sebelum aktivasi | Error |
+| TEN014 | `tenantForeignKeys` di RDF ber-`requestScope` sesuai relasi SDF, sehingga setiap foreign key ke tabel ber-tenant diperiksa tenant-nya (lihat [Foreign Key ke Data Tenant Lain](./tenant.md#foreign-key-ke-data-tenant-lain)) | Error |
 | TEN020 | Sumber data UDF bertipe `api`, misalnya field select, cascade `dependsOn`, dan lookup grid detail, hanya memakai endpoint yang lolos TEN010 | Error |
 
 ### Pemisahan Data pada SQL yang Ditulis Sendiri

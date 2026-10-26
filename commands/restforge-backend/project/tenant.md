@@ -38,7 +38,7 @@ npx restforge project tenant --deactivate --project=<NAME> [OPTIONS]
 1. Config mendapat `TENANT_MODE=multi`. `TENANT_COLUMN=tenant_id` dan `TENANT_BYPASS_ROLES` kosong ditambahkan bila key itu belum ada.
 2. SDF tabel bisnis yang belum punya field `tenant_id` mendapat field `tenant_id` dan index-nya. SDF lama diarsipkan ke `.restforge/archive/` sebelum ditulis ulang.
 3. Unique pada tabel bisnis diubah menjadi unique per tenant, misalnya `UNIQUE (category_code)` menjadi `UNIQUE (tenant_id, category_code)`, sehingga setiap tenant boleh memakai kode yang sama.
-4. RDF tabel bisnis mendapat blok `requestScope` yang memfilter data berdasarkan `tenant_id` milik user yang login. Kolom `tenant_id` ikut masuk `fieldName`, dan query JOIN hasil generate ikut memilih kolom itu.
+4. RDF tabel bisnis mendapat blok `requestScope` yang memfilter data berdasarkan `tenant_id` milik user yang login. Kolom `tenant_id` ikut masuk `fieldName`, dan query JOIN hasil generate ikut memilih kolom itu. Foreign key yang menunjuk tabel ber-`tenant_id` dicatat di `tenantForeignKeys` (lihat [Foreign Key ke Data Tenant Lain](#foreign-key-ke-data-tenant-lain)).
 5. Database mendapat kolom `tenant_id`. Baris lama diisi tenant default, lalu kolom dibuat NOT NULL dan diberi index. Unique di database diubah mengikuti SDF.
 6. Endpoint project `--project` yang memakai tabel tersebut dibuat ulang.
 
@@ -63,6 +63,41 @@ Beberapa unique tetap berlaku untuk seluruh tabel dan ditandai `stays table-wide
 ### Tenant untuk Baris Lama
 
 Baris yang sudah ada sebelum aktivasi diisi tenant dari `--default-tenant`, yang menerima id atau code tenant. Tanpa flag ini, auth extension memakai tenant pertama di registry, atau membuat tenant `DEFAULT` bila registry masih kosong. Project auth-service memakai tenant berkode `DEFAULT` milik app tersebut, yang dibuat `auth-service provision`. Tabel kosong tidak membutuhkan tenant default.
+
+### Foreign Key ke Data Tenant Lain
+
+Foreign key database hanya memastikan data tujuan ada, tanpa melihat tenant-nya. Karena itu endpoint juga memeriksa tenant data tujuan sebelum menyimpan. Misalnya user tenant `toko_a` mengirim penerimaan barang dengan `vendor_id` milik `toko_b` lewat API. Request itu ditolak, walaupun vendor tersebut ada di database.
+
+```json
+{
+  "success": false,
+  "error": "Foreign key constraint",
+  "code": "FOREIGN_KEY_VIOLATION",
+  "message": "Referenced data not found",
+  "details": {
+    "vendor_id": ["Referenced data not found"]
+  },
+  "timestamp": "2026-10-27T10:30:00.000Z"
+}
+```
+
+Daftar foreign key yang diperiksa ada di key `tenantForeignKeys` pada RDF. `payload generate`, `payload sync`, dan aktivasi menurunkan daftar ini dari relasi `belongsTo` di SDF, termasuk foreign key tabel detail pada RDF composite.
+
+```json
+"tenantForeignKeys": [
+  { "column": "vendor_id", "table": "vendor", "references": "vendor_id", "tenantColumn": "tenant_id" },
+  { "detailTable": "good_receipt_item", "column": "item_id", "table": "item", "references": "item_id", "tenantColumn": "tenant_id" }
+]
+```
+
+Pemeriksaan ini mengikuti beberapa aturan.
+
+- Berlaku pada `create`, `update`, `create-composite`, dan `update-composite`.
+- Pada update, hanya foreign key yang nilainya berubah yang diperiksa. Data lama yang terlanjur menunjuk tenant lain tetap bisa diubah selama foreign key itu tidak diganti.
+- Foreign key ke tabel tanpa kolom `tenant_id`, misalnya tabel referensi yang dipakai bersama, tidak diperiksa.
+- User dengan role di `TENANT_BYPASS_ROLES` tidak diperiksa.
+
+`tenantForeignKeys` milik generator, sehingga daftar ini tidak perlu ditulis sendiri. Setelah relasi di SDF berubah, `payload sync` perlu dijalankan lalu endpoint dibuat ulang. [`project verify`](./verify.md) melaporkan RDF yang daftarnya tidak sesuai relasi SDF.
 
 ## Project Auth Service
 
@@ -99,7 +134,7 @@ Setelah aktivasi, dan setiap kali tabel, RDF, atau processor ditambahkan, [`proj
 
 ## Deaktivasi
 
-`--deactivate` menulis `TENANT_MODE=single`, melepas `requestScope` tenant dari RDF, lalu membuat ulang endpoint `--project`. Kolom `tenant_id` beserta isinya, unique per tenant, `TENANT_COLUMN`, dan `TENANT_BYPASS_ROLES` tetap ada. Aktivasi berikutnya tidak perlu mengisi tenant untuk baris lama lagi.
+`--deactivate` menulis `TENANT_MODE=single`, melepas `requestScope` tenant dan `tenantForeignKeys` dari RDF, lalu membuat ulang endpoint `--project`. Kolom `tenant_id` beserta isinya, unique per tenant, `TENANT_COLUMN`, dan `TENANT_BYPASS_ROLES` tetap ada. Aktivasi berikutnya tidak perlu mengisi tenant untuk baris lama lagi.
 
 ## Contoh
 
