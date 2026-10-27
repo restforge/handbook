@@ -244,6 +244,8 @@ Group yang semua isinya tersembunyi ikut disembunyikan, termasuk group yang hany
 
 Untuk plugin `vanilla-js-auth`, `payload migrate` menulis entri `permissions.<pageRef>.read` secara otomatis dari RDF yang memakai `authGuard`, dengan nilai berformat `<RESOURCE>_READ`. Menu page tersebut dengan begitu hanya tampil untuk pengguna yang memegang permission READ resource-nya. Plugin lain tidak mendapat entri ini. Entri yang ditulis manual dipertahankan pada migrate ulang. Lihat [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#permissions-untuk-plugin-vanilla-js-auth).
 
+Permission READ master tidak perlu diberikan hanya agar dropdown di form lain termuat. Form Item tetap bisa membaca Category bagi role yang hanya memegang permission `ITEM_*`, sehingga menu Category tetap tersembunyi bagi role tersebut. Aturannya ada di [Membaca Data Referensi dari Form Lain](../rdf/auth-guard.md#membaca-data-referensi-dari-form-lain).
+
 ## Migrate Ulang
 
 `navigation` yang disusun manual di aggregator dipertahankan saat `payload migrate` dijalankan ulang, termasuk group bersarang, separator, dan item `link`. Page yang `pageRef`-nya sudah ada di tingkat mana pun tidak ditambahkan lagi. Page baru masuk ke tingkat teratas `navigation`, lalu dapat dipindahkan ke group yang sesuai. Lihat [`payload migrate`](../../commands/restforge-backend/payload/migrate.md).

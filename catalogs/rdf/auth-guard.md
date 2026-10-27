@@ -22,6 +22,7 @@ sisi server, tanpa perlu menulis middleware manual.
 | `enabled` | boolean | ✓ | `true` mengaktifkan guard. `false` atau blok tidak ada = output generate tanpa guard (backward compatible) |
 | `appCode` | string | ✓ bila `enabled` | Kode aplikasi yang dicocokkan dengan klaim `app` pada token. Dapat dioverride saat runtime lewat env `AUTH_APP_CODE` |
 | `publicPaths` | array of string | ✗ | Daftar path yang boleh diakses tanpa token (exact match, relatif terhadap prefix modul, wajib diawali `/`). `/health` dan `/info` selalu publik tanpa perlu dideklarasikan |
+| `readGrants` | object | ✗ | Endpoint lain yang boleh dibaca form ini tanpa permission endpoint tersebut, di luar yang sudah dibuka relasi FK. Lihat [Membaca Data Referensi dari Form Lain](#membaca-data-referensi-dari-form-lain) |
 
 ## Artefak yang Dihasilkan
 
@@ -76,6 +77,72 @@ membawa token valid tanpa permission spesifik.
 Export, import, dan perubahan status workflow punya permission sendiri. Hak baca
 atau ubah biasa tidak otomatis mencakup ketiganya.
 
+## Membaca Data Referensi dari Form Lain
+
+Form transaksi biasanya membaca data master, misalnya form Item memuat dropdown Category lewat `category/lookup`. Endpoint itu menuntut `CATEGORY_READ`, padahal permission tersebut juga menampilkan menu Category. Guard karena itu mengizinkan pembacaan data referensi atas nama form pemakainya, sehingga role yang hanya diberi permission `ITEM_*` tetap bisa memakai form Item tanpa ikut mendapat menu Category.
+
+Request baca ke endpoint lain diizinkan bila memenuhi tiga syarat berikut.
+
+- Request membawa header `X-Resource` berisi kode resource form, misalnya `X-Resource: ITEM`. Frontend hasil `restforge-designer` mengirim header ini otomatis dari setiap halaman.
+- User memegang salah satu permission resource form tersebut, misalnya `ITEM_CREATE` saja. Role yang hanya boleh menambah item tetap bisa memuat dropdown Category.
+- Endpoint dan action yang diminta terdaftar sebagai hak baca form tersebut.
+
+Hak baca hanya berlaku untuk `lookup`, `read`, `first`, dan `datatables`. Request `create`, `update`, dan `delete` ke endpoint master tetap menuntut permission master. User yang memegang permission endpoint itu sendiri, misalnya `CATEGORY_READ`, tetap dilayani seperti biasa tanpa batasan di bawah.
+
+### Hak Baca dari Relasi FK
+
+Setiap relasi `belongsTo` di SDF tabel form otomatis membuka `lookup`, `read`, dan `first` ke tabel yang dirujuk. Relasi berikut di `schema/item.js` sudah cukup agar form Item bisa membaca Category, tanpa deklarasi apa pun di RDF.
+
+```js
+relations: {
+  category: {
+    type: 'belongsTo',
+    localKey: 'category_id',
+    references: 'category_id'
+  }
+}
+```
+
+Kolom yang bisa dibaca lewat hak ini hanya primary key tabel yang dirujuk dan kolom tampilannya, yaitu kolom yang sama dengan hasil `--expand-fk`. Untuk contoh di atas, kolomnya adalah `category_id` dan `category_name`.
+
+`datatables` tidak ikut dibuka dari relasi FK, karena endpoint ini menyediakan pencarian dan paging atas seluruh isi tabel seperti halaman daftar di menu master.
+
+### Deklarasi Manual dengan `readGrants`
+
+`readGrants` ditulis di blok `authGuard` RDF form pemakai untuk dua kasus, yaitu `datatables` (misalnya modal pencarian Employee) dan tabel yang dibaca tanpa relasi FK. Contoh berikut ditulis di `payload/attendance-machine-log.json`.
+
+```json
+{
+    "authGuard": {
+        "enabled": true,
+        "appCode": "HRM",
+        "publicPaths": [],
+        "readGrants": {
+            "employee": {
+                "actions": ["datatables"],
+                "columns": ["employee_id", "employee_name", "department_id", "section_id"]
+            }
+        }
+    }
+}
+```
+
+| Field | Tipe | Wajib | Keterangan |
+|-------|------|:-----:|-----------|
+| key | string | ✓ | Nama endpoint yang dibaca, misalnya `employee` |
+| `actions` | array of string | ✓ | Kombinasi `lookup`, `read`, `first`, dan `datatables` |
+| `columns` | array of string | ✓ | Kolom yang boleh dikembalikan ke form ini |
+
+Bila endpoint yang sama juga dibuka relasi FK, action dan kolom dari keduanya digabung. `readGrants` dengan begitu bisa menambah `datatables` atau kolom untuk relasi yang sudah ada.
+
+### Batas Kolom
+
+Request yang dilayani lewat hak baca form hanya menerima kolom dari daftar kolomnya. Request yang meminta kolom lain lewat `select`, termasuk di dalam ekspresi seperti `category_name || category_code AS text`, ditolak `403`. Response `read`, `first`, dan `datatables` tanpa `select` dipangkas ke daftar kolom tersebut.
+
+Header `X-Resource` yang dipalsukan tidak menambah hak. User tetap harus memegang permission resource yang disebut di header, dan hanya bisa membaca endpoint, action, serta kolom yang terdaftar untuk resource itu.
+
+Hak baca ditulis ke file guard saat `endpoint create` dijalankan untuk endpoint form, dan tidak menambah permission baru di auth-service. Matriks role di editor RBAC tetap hanya memuat permission menu.
+
 ## Konfigurasi Verifikasi Token (Env Runtime)
 
 Mode verifikasi dipilih dari env server backend, diperiksa berurutan (yang
@@ -116,6 +183,9 @@ proteksi ingin dilepas sepenuhnya, lalu restart server.
 | `enabled` harus boolean | Error saat generate |
 | `appCode` kosong saat `enabled: true` | Error saat generate |
 | `publicPaths` bukan array of string berawalan `/` | Error saat generate |
+| `readGrants` bukan object berkunci nama endpoint | Error saat generate |
+| `actions` kosong atau memuat action selain `lookup`, `read`, `first`, `datatables` | Error saat generate |
+| `columns` kosong atau memuat nama kolom tidak valid | Error saat generate |
 
 ---
 
