@@ -72,7 +72,7 @@ Jalannya Pipeline REST API mengikuti alur orkestrasi command yang sudah ada:
 | `[3b/4]` | FK expansion: `payload sync --expand-fk` untuk tabel yang memiliki foreign key |
 | `[4/4]` | REST endpoints: `endpoint create` per tabel |
 
-Setelah pipeline backend, command menulis launcher `server-start.bat` (Windows) atau `server-start.sh` (Linux/macOS) di folder kerja untuk menjalankan REST API secara manual.
+Setelah pipeline selesai, command menulis launcher di folder kerja dengan template yang sama dengan [`launcher create`](./launcher/create.md). Di Windows, runner mengikuti pilihan cara menjalankan service, yaitu window terminal baru (`launch-terminal.bat`) atau pm2 (`launch-pm2.bat` dan `ecosystem.config.js`). Di Linux dan macOS, command selalu menulis launcher pm2. Launcher lama ditimpa setiap kali `fast-track` dijalankan.
 
 Bila scope mencakup frontend, pipeline berikut dijalankan setelahnya:
 
@@ -112,7 +112,7 @@ npx restforge fast-track --project=visitors-app --schema-path=./schema --overwri
 ## Catatan
 
 - Command bersifat interaktif (prompt LICENSE, database, scope, konfirmasi). Pada lingkungan non-interaktif (CI/CD), seluruh input perlu dialirkan ke stdin.
-- Pembukaan window service baru (runtime server dan frontend) memakai `cmd start` sehingga spesifik Windows. Launcher `server-start.bat`/`.sh` tetap ditulis untuk start manual lintas OS.
+- Pembukaan window service baru (runtime server dan frontend) hanya berlaku di Windows. Window tersebut memakai judul yang sama dengan `launch-terminal.bat`, sehingga `launch-terminal.bat stop` juga menutupnya.
 - Berbeda dengan `schema introspect`, scope backend `fast-track` menerima `DB_TYPE=sqlite`.
 - `fast-track` tidak memuat logic generate baru. Seluruh artefak dihasilkan oleh command yang diorkestrasi: `init`, `validate`, `config set-default`, `schema migrate`, `payload generate`, `payload sync`, `endpoint create`, `payload migrate`, serta `npx restforge-designer generate`.
 

@@ -317,8 +317,8 @@ Tunggu proses berjalan sampai pada dialog konfirmasi berikut ini, dan pilih Y
   DONE  —  REST API generated + frontend app generated   [scope: REST API + Frontend app]
 ================================================================
   Backend  : payload/ , examples/myapp/  (1 endpoint)
-  Start    : server-start.bat  (start REST API manually)
   Frontend : frontend/apps/myapp/  (start: npx restforge frontend serve --port=8000 --server-address=127.0.0.1)
+  Launcher : launch-terminal.bat  [start|stop|restart|status|logs]
 ================================================================
 
   Run Runtime Server and frontend application now in a new window? (Y/n):
@@ -327,14 +327,14 @@ Tunggu proses berjalan sampai pada dialog konfirmasi berikut ini, dan pilih Y
 
 Proses berakhir sampai pada dialog informasi seperti dibawah ini
 ```bash
-  Opening new window: "RESTForge Server - myapp"
+  Opening new window: "myapp - backend"
 #npx restforge serve --project=myapp --config=db-connection.env --watch
   ✓ Server window opened. Keep it open. Stop with Ctrl+C.
 
   Waiting for server health: http://127.0.0.1:3000/api/myapp/health
   ✓ Server healthy (3.1s).
 
-  Opening new window: "RESTForge Frontend - myapp"
+  Opening new window: "myapp - frontend"
 #npx restforge frontend serve --port=8000 --server-address=127.0.0.1
   ✓ Frontend window opened (WEB_SERVER_PORT 8000).
     Open: http://localhost:8000/index.html

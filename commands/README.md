@@ -15,7 +15,7 @@ Kedua folder berisi dokumentasi binary terpisah. Pattern command berbeda di seti
 
 ## Perintah Operasi Backend
 
-Pattern: `npx restforge <resource> <verb> [options]`. Total **55 public command** (4 runtime server + 2 verb global + 49 CLI generator) dan **2 binary Kafka consumer**.
+Pattern: `npx restforge <resource> <verb> [options]`. Total **56 public command** (4 runtime server + 2 verb global + 50 CLI generator) dan **2 binary Kafka consumer**.
 
 Detail dan daftar resource lengkap ada di [`restforge-backend/README.md`](./restforge-backend/README.md).
 
@@ -38,6 +38,7 @@ Quick-reference resource:
 | `catalog` | Introspeksi spesifikasi RESTForge (output JSON catalog) | [`restforge-backend/catalog/`](./restforge-backend/catalog/) |
 | `project` | Operasi level project (list, delete, auth, sdk, tenant) | [`restforge-backend/project/`](./restforge-backend/project/) |
 | `auth-service` | Layanan auth berbasis RBAC: init, bootstrap, link, manifest, provision | [`restforge-backend/auth-service/`](./restforge-backend/auth-service/) |
+| `launcher` | Script start dan stop aplikasi lewat terminal atau pm2 | [`restforge-backend/launcher/`](./restforge-backend/launcher/) |
 
 File khusus:
 

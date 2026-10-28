@@ -57,6 +57,7 @@ Setiap resource memiliki satu atau lebih verb. Detail flag per verb ada di folde
 | `project` | `list`, `delete`, `auth`, `sdk`, `tenant` | Operasi level project | [`project/`](./project/) |
 | `auth-service` | `init`, `bootstrap`, `link`, `manifest`, `provision` | Layanan auth berbasis RBAC per aplikasi | [`auth-service/`](./auth-service/) |
 | `frontend` | `serve` | Menjalankan aplikasi frontend hasil designer sebagai static file server | [`frontend/`](./frontend/) |
+| `launcher` | `create` | Membuat script untuk menjalankan dan menghentikan semua proses aplikasi lewat terminal atau pm2 | [`launcher/`](./launcher/) |
 
 ## Binary Kafka Consumer
 
