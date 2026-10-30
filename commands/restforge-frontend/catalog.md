@@ -24,7 +24,7 @@ Top-level catalog (`--section=all`):
 | Key | Isi |
 |-----|-----|
 | `udfCatalogVersion` | Versi kontrak catalog (integer). Naik saat ada perubahan breaking pada struktur catalog |
-| `fields` | Whitelist tipe field, editor mode, opsi id-generation, badge color, range `decimalPlaces`, plus pola `temporalType`/`dateFormat` field tanggal |
+| `fields` | Whitelist tipe field, editor mode, opsi id-generation, badge color, range `decimalPlaces` dan `minDecimalPlaces`, plus pola `temporalType`/`dateFormat` field tanggal |
 | `navigation` | Aturan navigasi: tipe item, kedalaman maksimum, pattern `pageId` |
 | `appConfig` | Required fields `appConfig` + range `port` + `numberFormat.locale`/`currencyPrefix` + pola `dateFormat`/`dateTimeFormat` |
 | `dashboard` | Opsi halaman dashboard: tipe widget, chart engine, pie shape, colspan, allowed/forbidden/deprecated fields |
@@ -59,7 +59,8 @@ Output (dipotong):
     "validIdgenModes": ["code", "number", "pin", "random", "serial"],
     "validIdgenFormats": ["text", "yyyy", "yyyymm", "yyyymmdd"],
     "validBadgeColors": ["danger", "info", "primary", "success", "warning"],
-    "decimalPlaces": { "min": 0, "max": 20 }
+    "decimalPlaces": { "min": 0, "max": 20 },
+    "minDecimalPlaces": { "min": 0, "max": 20, "requires": "decimalPlaces", "appliesTo": ["number"] }
   },
   "navigation": {
     "validNavItemTypes": ["group", "page", "separator"],

@@ -112,7 +112,7 @@ Detail atribut khusus untuk setiap tipe ada di [`field-types.md`](./field-types.
 |------|---------------|
 | `text` | `maxlength`, `placeholder` |
 | `textarea` | `rows`, `maxlength`, `placeholder` |
-| `number` | `min`, `max`, `step`, `format`, `decimalPlaces` |
+| `number` | `min`, `max`, `step`, `format`, `decimalPlaces`, `minDecimalPlaces` |
 | `checkbox` | `defaultValue`, `checkboxText.checked`, `checkboxText.unchecked`, `statusBadge` |
 | `select` | `dataSource`, `tableField`, `statusBadge` (khusus `dataSource.type: "static"`) |
 | `date` / `timestamp` | `dateFormat`, `temporalType` (khusus `timestamp`) |
@@ -136,10 +136,31 @@ Field `number` di halaman master mendukung dua atribut tambahan untuk memformat 
 |---------|------|-----------|
 | `format` | string | Format tampilan angka. Valid: `"number"` (pemisah ribuan biasa) atau `"currency"` (format mata uang) |
 | `decimalPlaces` | integer | Jumlah digit desimal yang ditampilkan. Default `0` bila tidak diisi |
+| `minDecimalPlaces` | integer | Jumlah digit desimal minimum yang selalu tampil, 0 sampai 20. Default sama dengan `decimalPlaces`. Wajib disertai `decimalPlaces` dan tidak boleh melebihinya |
 
 Kedua atribut berlaku pada form input dan kolom DataTable halaman master dengan nilai yang sama, sehingga satu deklarasi di field menghasilkan tampilan yang seragam di keduanya. Pada form input, nilai yang dimuat saat edit ditampilkan dengan format ini, input diformat otomatis saat diketik, dan diparse balik ke angka murni saat disimpan. Karakter pemisah ribuan dan desimal mengikuti `appConfig.numberFormat.locale` (lihat [`app-config.md`](./app-config.md#properti)).
 
 Jumlah digit desimal tidak diatur di level aplikasi. Nilai `decimalPlaces` berasal dari skala kolom database: `payload generate` menulis skala itu sebagai `scale` di RDF, lalu `payload migrate` menurunkannya ke `decimalPlaces` field UDF. RDF lama yang skalanya masih tersimpan di `precision` tetap terbaca sebagai fallback, disertai warning migrate. Field tanpa `decimalPlaces` ditampilkan tanpa digit desimal.
+
+Secara default angka selalu tampil dengan digit desimal sebanyak `decimalPlaces`, sehingga kolom berskala 8 menampilkan `1.00000000`. `minDecimalPlaces` membuang nol di belakang koma setelah digit minimum terpenuhi, sedangkan presisi yang disimpan tetap sesuai skala kolom.
+
+```json
+{
+    "name": "conversion_factor",
+    "label": "Conversion Factor",
+    "type": "number",
+    "decimalPlaces": 8,
+    "minDecimalPlaces": 0
+}
+```
+
+| `minDecimalPlaces` | Nilai `1` | Nilai `0.01` | Nilai `1.5` |
+|--------------------|-----------|--------------|-------------|
+| tidak diisi | `1.00000000` | `0.01000000` | `1.50000000` |
+| `0` | `1` | `0.01` | `1.5` |
+| `2` | `1.00` | `0.01` | `1.50` |
+
+Atribut ini berlaku di kolom DataTable, nilai yang dimuat ke form, tampilan input setelah blur, serta sel dan summary grid detail. Saat mengetik, jumlah digit desimal tetap dibatasi `decimalPlaces`. Atribut ini bukan turunan RDF, sehingga `payload migrate` tidak menulisnya.
 
 Nilai `format` juga turunan RDF: `payload migrate` menulis `"currency"` hanya bila RDF mendeklarasikan `constraints.format: "currency"` pada field numerik tersebut, dan `"number"` untuk field lain apa pun namanya (`price`, `harga`, `nilai_harga`). Migrate ulang tanpa `--overwrite` mempertahankan `format` yang diubah manual, sedangkan `--overwrite` mengembalikannya ke nilai turunan RDF. Field tanpa key `format` sama sekali (misalnya UDF yang ditulis manual, bukan hasil migrate) ditampilkan tanpa pemformatan, angka mentah apa adanya; tulis `format` dan `decimalPlaces` secara eksplisit pada UDF tulisan tangan agar tampilannya terformat.
 

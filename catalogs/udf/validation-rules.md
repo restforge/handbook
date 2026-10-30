@@ -89,6 +89,10 @@ Scope `form` mendukung workflow generate per-page tanpa harus regenerate seluruh
 | `inTable: true` tanpa `tableOrder` | Warning | `Field '<name>' has inTable:true but no tableOrder is defined` |
 | `type: select` tanpa `dataSource` | Warning | `Field '<name>' is of type 'select' but has no dataSource` |
 | `decimalPlaces` integer 0–20 (bila ada) | Error | `Field '<name>' decimalPlaces must be an integer between 0 and 20, got <value>` |
+| `minDecimalPlaces` integer 0–20 (bila ada) | Error | `Field '<name>' minDecimalPlaces must be an integer between 0 and 20, got <value>` |
+| `minDecimalPlaces` wajib disertai `decimalPlaces` | Error | `Field '<name>' declares minDecimalPlaces without decimalPlaces; set decimalPlaces as the maximum number of fraction digits` |
+| `minDecimalPlaces` tidak melebihi `decimalPlaces` | Error | `Field '<name>' minDecimalPlaces (<min>) must not exceed decimalPlaces (<dp>)` |
+| `minDecimalPlaces` hanya pada field `number` | Warning | `Field '<name>' declares minDecimalPlaces but type is '<type>'; minDecimalPlaces only applies to fields with type 'number' and has no effect here` |
 | `statusBadge` boolean (bila ada) | Error | `Field '<name>' has an invalid statusBadge: expected boolean` |
 | `statusBadge` hanya pada `checkbox` atau `select` static | Error | `Field '<name>': statusBadge applies only to fields of type 'checkbox' or 'select' with dataSource.type 'static'` |
 

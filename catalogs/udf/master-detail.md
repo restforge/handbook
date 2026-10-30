@@ -153,8 +153,9 @@ Field detail bertipe `number` — baik yang bisa diedit langsung maupun hasil ka
 |---------|------|-----------|
 | `format` | string | Format tampilan angka. Valid: `"number"` (pemisah ribuan biasa) atau `"currency"` (format mata uang). Nilai lain diperlakukan sama dengan `"number"` |
 | `decimalPlaces` | integer | Jumlah digit desimal yang ditampilkan. Default `0` bila tidak diisi |
+| `minDecimalPlaces` | integer | Jumlah digit desimal minimum yang selalu tampil. Nol di belakang koma setelah digit minimum dibuang. Wajib disertai `decimalPlaces` dan tidak boleh melebihinya |
 
-Kedua atribut ini hanya memengaruhi tampilan input dan sel tabel grid detail. Nilai yang dikirim ke server dibaca dari teks tampilan. Nilai itu tidak dibulatkan selama `decimalPlaces` sama dengan skala kolom database. Kondisi ini terjamin bila `decimalPlaces` berasal dari `payload migrate`, bukan diisi manual dengan nilai yang lebih kecil dari skala kolom.
+Atribut `format`, `decimalPlaces`, dan `minDecimalPlaces` hanya memengaruhi tampilan input dan sel tabel grid detail. Nilai yang dikirim ke server dibaca dari teks tampilan. Nilai itu tidak dibulatkan selama `decimalPlaces` sama dengan skala kolom database. Kondisi ini terjamin bila `decimalPlaces` berasal dari `payload migrate`, bukan diisi manual dengan nilai yang lebih kecil dari skala kolom.
 
 Sel angka di grid mengikuti aturan input angka di halaman master (lihat [`field-types.md`](./field-types.md#number)). Angka 0 tetap 0, sel kosong dikirim sebagai `null`, dan tanda minus ditolak pada field dengan `min` bernilai 0 atau lebih. Kalkulasi baris dan total menghitung sel kosong sebagai 0.
 

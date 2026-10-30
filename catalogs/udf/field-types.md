@@ -14,7 +14,7 @@ checkbox, date, number, select, text, textarea, time, timestamp
 |------|-------------|------------------|----------------|
 | `text` | `<input type="text">` | — | `maxlength`, `placeholder` |
 | `textarea` | `<textarea>` | — | `rows`, `maxlength`, `placeholder` |
-| `number` | `<input type="number">` | — | `min`, `max`, `step` |
+| `number` | `<input type="number">` | — | `min`, `max`, `step`, `format`, `decimalPlaces`, `minDecimalPlaces` |
 | `checkbox` | toggle switch | — | `defaultValue`, `checkboxText` |
 | `select` | `<select>` | Select2 | `dataSource`, `tableField` |
 | `date` | `<input type="text">` | Flatpickr | — |
@@ -89,6 +89,7 @@ Input angka dengan kontrol spinner.
 | `min` | number | Nilai minimum yang diizinkan. Nilai di bawahnya ditolak sebelum request dikirim, dengan pesan di bawah field. Bila bernilai 0 atau lebih, form menolak tanda minus saat pengguna mengetik |
 | `max` | number | Nilai maksimum yang diizinkan. Nilai di atasnya ditolak sebelum request dikirim |
 | `step` | number | Increment/decrement per klik spinner |
+| `minDecimalPlaces` | integer | Digit desimal minimum yang selalu tampil. Wajib disertai `decimalPlaces` dan tidak boleh melebihinya. Lihat [`field-attributes.md`](./field-attributes.md#format-dan-decimalplaces-untuk-field-number) |
 
 Angka 0 tetap tampil dan dikirim ke backend sebagai 0. Field yang dikosongkan dikirim sebagai `null`, bukan 0. Field wajib (`required`) yang diisi 0 dianggap terisi, sedangkan field wajib yang kosong ditolak sebelum request dikirim. Satu tanda minus di depan angka diterima, kecuali pada field dengan `min` bernilai 0 atau lebih.
 
