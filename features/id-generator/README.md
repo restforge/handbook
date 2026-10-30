@@ -239,6 +239,34 @@ POST /api/inventory/idgen/code
 
 ---
 
+## Membuat Kode Singkatan dari Teks
+
+Mode `abbr` membentuk kode singkatan dari teks, misalnya `SJA` dari "PT Sinar Jaya Abadi". Algoritmanya sama dengan blok [`abbreviations`](../../catalogs/sdf/abbreviations.md#cara-kode-dibentuk) di SDF. Mode ini tidak membaca tabel dan tidak menyimpan state di Redis, sehingga hasilnya hanya kode dasar dan belum dijamin unik.
+
+```
+POST /api/inventory/idgen/abbr
+```
+
+```json
+{ "text": "PT Sinar Jaya Abadi", "maxLength": 3, "ignoreWords": ["PT", "CV"] }
+```
+
+```json
+{ "success": true, "statusCode": 200, "data": { "value": "SJA" } }
+```
+
+| Parameter | Tipe | Wajib | Aturan |
+|-----------|------|:-----:|--------|
+| `text` | string | ✓ | Minimal berisi satu huruf atau angka. Bila tidak, request ditolak `IDGEN_INVALID_TEXT` |
+| `maxLength` | integer | ✓ | Antara 1 dan 32. Bila tidak, request ditolak `IDGEN_INVALID_MAX_LENGTH` |
+| `ignoreWords` | array of string | ✗ | Setiap kata hanya berisi huruf dan angka. Bila tidak, request ditolak `IDGEN_INVALID_IGNORE_WORDS` |
+
+Endpoint ini membalas 200 karena tidak ada nilai yang dibuat atau disimpan. Seperti mode lain, endpoint hanya tersedia saat `IDGEN_ENABLED=true`. Di processor dan handler, mode yang sama dipanggil lewat `services.idgen.abbr({ text, maxLength, ignoreWords })`, misalnya untuk dijadikan `prefix` nomor urut.
+
+Kode master yang disimpan ke tabel, seperti kode kategori, lebih tepat dideklarasikan lewat blok `abbreviations` di SDF. Jalur itu memeriksa bentrok ke tabel dan tidak bergantung pada Redis. `defaultValue.source: "idgen"` di UDF tidak menyediakan mode `abbr`, karena nilainya diminta saat form dibuka, sebelum nama diisi.
+
+---
+
 ## Mencegah Nomor Ganda saat Retry (Idempotency)
 
 Sertakan header `Idempotency-Key` agar retry dengan key yang sama mengembalikan hasil identik tanpa membuat nomor baru. Fitur ini berguna ketika response pertama hilang karena gangguan jaringan dan request dikirim ulang.
@@ -315,6 +343,9 @@ Validasi parameter dilakukan lebih awal, sehingga nilai yang keliru langsung dit
 | `IDGEN_COUNTER_OVERFLOW` | 422 | Counter melebihi batas digit. Tetapkan `numDigits` dengan cadangan sejak awal |
 | `IDGEN_UNIQUE_RETRY_EXHAUSTED` | 409 | Pattern terlalu pendek untuk volume nilai. Perpanjang pattern |
 | `IDGEN_RESERVATION_NOT_FOUND` | 404 | Token reservation tidak ada, sudah dikonfirmasi, atau kedaluwarsa |
+| `IDGEN_INVALID_TEXT` | 400 | Teks mode `abbr` tidak berisi huruf atau angka |
+| `IDGEN_INVALID_MAX_LENGTH` | 400 | `maxLength` mode `abbr` di luar 1 sampai 32 |
+| `IDGEN_INVALID_IGNORE_WORDS` | 400 | `ignoreWords` mode `abbr` bukan array kata berisi huruf dan angka |
 | `IDGEN_DISABLED` | 503 | Fitur belum aktif atau Redis tidak terhubung |
 
 > **Catatan:** Counter overflow tidak dapat dipulihkan otomatis, sehingga pemilihan `numDigits` perlu mempertimbangkan estimasi volume per periode ditambah satu atau dua digit cadangan.
@@ -383,7 +414,7 @@ Token reservation dikelola otomatis oleh form. Preview yang ditinggalkan tanpa s
 | Aktivasi backend | `IDGEN_ENABLED=true` di file `.env` |
 | Aktivasi frontend | UDF `defaultValue.source: "idgen"` pada field |
 | Dependency | Redis Server |
-| Mode tersedia | `number`, `pin`, `serial`, `code`, `random` |
+| Mode tersedia | `number`, `pin`, `serial`, `code`, `random`, `abbr` |
 | Sumber keacakan | `crypto.randomInt()` (crypto-secure) |
 | Idempotency | Opt-in lewat header `Idempotency-Key` |
 | Reuse pool dan reservation | Hanya untuk mode `number` |

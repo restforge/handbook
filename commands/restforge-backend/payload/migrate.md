@@ -440,6 +440,7 @@ Ringkasan:
 | JOIN discovery | RDF utama ber-JOIN memuat RDF tabel terkait dari sibling folder dan mengonversinya menjadi page tambahan (1 RDF utama → multi page) |
 | Field di-exclude | Primary key (`constraints.primaryKey: true`), audit columns (`created_at`, `created_by`, `updated_at`, `updated_by`), display column milik tabel JOIN |
 | Field yang diisi hook (`filledByHook`) | Field bukan primary key menjadi `editorMode: "readonly"` tanpa `required` (lihat [Field yang Diisi Hook](#field-yang-diisi-hook-filledbyhook)) |
+| Field kode singkatan (`abbreviation`) | Field menjadi `editorMode: "readonly"` tanpa `required`, dan `defaultValue` bersumber IDGEN dibuang (lihat [Field Kode Singkatan](#field-kode-singkatan-abbreviation)) |
 | Properti page | `tableName` → `pageId` (kebab-case), `pageTitle` (Title Case), `apiPath` (sama dengan `pageId`) |
 | Fitur otomatis (search) | `datatablesWhere` memuat kolom searchable → `enableSearch: true` |
 | Fitur otomatis (status filter) | Field status utama — `is_active` boolean ATAU `is_active`/`status`/`state` dengan enum RDF — → `enableStatusFilter: true` + `statusFilter`, dan field tersebut diberi `statusBadge: true` (lihat [`catalogs/udf/features.md`](../../../catalogs/udf/features.md#enablestatusfilter-dan-statusfilter)) |
@@ -544,6 +545,16 @@ Migrate menghasilkan field UDF berikut.
 ```
 
 Primary key bertanda `filledByHook` tetap tidak dibuat di form, dan field yang menjadi target `headerCalculations` tetap `hidden`. Pada migrate ulang, field yang baru diberi `filledByHook` di RDF ikut menjadi `readonly` tanpa `required`, kecuali `editorMode` field itu sudah diubah manual.
+
+### Field Kode Singkatan (`abbreviation`)
+
+Field ber-constraint [`abbreviation`](../../../catalogs/rdf/field-validation.md#kode-singkatan-abbreviation) diisi kode singkatan oleh runtime saat insert. Migrate menurunkannya dengan aturan yang sama seperti field `filledByHook`, yaitu `editorMode: "readonly"` tanpa `required`. Form Add bisa disimpan dengan kode kosong, lalu kode tampil saat Edit dan View tanpa bisa diubah lewat form.
+
+`defaultValue` dengan `source: "idgen"` pada field ini dibuang saat migrate ulang, karena nilai IDGEN diminta saat form dibuka dan ikut terkirim sehingga kode singkatan tidak pernah terbentuk. Migrate menulis warning berikut untuk setiap `defaultValue` yang dibuang. `defaultValue` jenis lain tidak disentuh.
+
+```
+product-category field 'product_category_code' is filled by abbreviation; defaultValue source "idgen" removed
+```
 
 ### Master-Detail Menjadi `details[]`
 

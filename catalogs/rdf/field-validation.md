@@ -98,7 +98,7 @@ Dua sifat penting `text` saat diturunkan dari database:
 
 | Tipe | Constraint Spesifik |
 |------|---------------------|
-| `string`, `text` | `minLength`, `maxLength`, `pattern`, `patternMessage`, `format` (`email`/`phone`/`url`/`uuid`), `enum`, `notEqual`, `trim`, `lowercase`, `uppercase`. `text` divalidasi identik dengan `string`; bedanya generator tidak menurunkan `maxLength` otomatis untuk `text` (unbounded). |
+| `string`, `text` | `minLength`, `maxLength`, `pattern`, `patternMessage`, `format` (`email`/`phone`/`url`/`uuid`), `enum`, `notEqual`, `trim`, `lowercase`, `uppercase`, `abbreviation` (khusus `string`, lihat [Kode Singkatan](#kode-singkatan-abbreviation)). `text` divalidasi identik dengan `string`; bedanya generator tidak menurunkan `maxLength` otomatis untuk `text` (unbounded). |
 | `integer`, `decimal`, `number` | `min`, `max`, `precision`, `scale`, `positive`, `negative`, `integer`, `notEqual`, `format` (`currency`) |
 | `date`, `datetime`, `timestamp`, `timestamptz` | `min`, `max`, `before`, `after`. `format` ditolak `payload validate` karena pola tanggal selalu diambil dari `DATEFORMAT`/`DATETIMEFORMAT` (lihat [`datetime-fields.md`](./datetime-fields.md#satu-standar-per-aplikasi)) |
 | `boolean` | `default`, `strict` |
@@ -229,6 +229,54 @@ Field 'jatuh_tempo' is required but was not filled by the onBeforeInsert hook
 Payload yang memakai `filledByHook` wajib mendaftarkan handler `onBeforeInsert`, `onBeforeUpdate`, `onBeforeCompositeInsert`, atau `onBeforeCompositeUpdate` di `components`. Tanpa handler tersebut, validasi payload menolak payload. Nilai `filledByHook` harus boolean.
 
 Di frontend hasil [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#field-yang-diisi-hook-filledbyhook), field ini tampil `readonly` dan tidak wajib diisi di form.
+
+## Kode Singkatan (`abbreviation`)
+
+Constraint `abbreviation` membentuk kode singkatan dari field teks lain saat insert, misalnya `LPK` untuk "Laptop & Komputer". Constraint ini diturunkan `payload generate` dan `payload sync` dari blok [`abbreviations`](../sdf/abbreviations.md) di SDF, dan ditulis ulang dari SDF setiap kali `payload sync` dijalankan. Perubahan manual di RDF tidak dipertahankan.
+
+```json
+{
+  "name": "product_category_code",
+  "type": "string",
+  "constraints": {
+    "required": true,
+    "maxLength": 32,
+    "unique": true,
+    "abbreviation": {
+      "from": "product_category_name",
+      "maxLength": 3
+    }
+  }
+}
+```
+
+| Properti | Tipe | Keterangan |
+|----------|------|-----------|
+| `from` | string | Field sumber. Harus ada di `fieldValidation` dan berbeda dari field target |
+| `maxLength` | integer | Panjang maksimal kode, antara 1 dan `maxLength` field target |
+| `ignoreWords` | array of string | Kata tambahan yang dilewati, diturunkan dari SDF bila ditulis |
+| `scope` | array of string | Kolom lain pada unique gabungan field target, misalnya `["tenant_id"]` pada project multi-tenant. Bentrok hanya dihitung di antara baris dengan nilai kolom yang sama |
+
+Field target harus bertipe `string` dan bertanda `"unique": true` atau punya `scope`. Validasi payload menolak constraint yang `from`-nya tidak ada, `maxLength`-nya di luar batas, atau `ignoreWords`-nya berisi karakter selain huruf dan angka. Aturan yang sama berlaku untuk `fieldValidation` di `masterDetail`.
+
+Saat insert, runtime menjalankan constraint ini dengan urutan berikut.
+
+1. Validasi request tidak menuntut nilai field target, meskipun field itu `required`.
+2. Handler `onBeforeInsert` atau `onBeforeCompositeInsert` berjalan lebih dulu, sehingga handler masih bisa mengisi kode sendiri.
+3. Bila field target masih kosong, runtime membentuk kode dari field sumber lalu memeriksa bentrok ke tabel, misalnya `AKK`, kemudian `AK2` bila `AKK` sudah dipakai.
+4. Bila field target sudah diisi request atau handler, nilai itu disimpan apa adanya tanpa diberi angka.
+5. Bila dua insert bersamaan memakai kode yang sama, insert yang kalah dihitung ulang dan dicoba lagi paling banyak lima kali.
+
+Constraint ini tidak membentuk ulang kode saat update. Request update tetap boleh mengirim kode baru, dengan aturan panjang dan unique yang sama. Jalur ini tidak memakai Redis, sehingga tetap berjalan saat `IDGEN_ENABLED=false`.
+
+| Kondisi | Status | Pesan di `details` |
+|---------|--------|---------------------|
+| Nilai kiriman lebih panjang dari `abbreviation.maxLength` | 400 `VALIDATION_FAILED` | `Field 'product_category_code' must not exceed 3 characters` |
+| Field sumber kosong atau tidak berisi huruf dan angka | 400 `VALIDATION_FAILED` | `Field 'product_category_code' cannot be generated: 'product_category_name' has no letters or digits` |
+| Semua angka untuk kode dasar sudah terpakai | 409 `ABBREVIATION_EXHAUSTED` | `Field 'product_category_code' has no free code left for base 'AKK' within maxLength 3` |
+| Nilai kiriman sudah dipakai baris lain | 409 `UNIQUE_VIOLATION` | Lihat [Format Error Response 409](#format-error-response-409-duplicate-entry) |
+
+Di frontend hasil [`payload migrate`](../../commands/restforge-backend/payload/migrate.md#field-kode-singkatan-abbreviation), field ini tampil `readonly` dan tidak wajib diisi di form.
 
 ## Nilai Kosong dan `nullable`
 
