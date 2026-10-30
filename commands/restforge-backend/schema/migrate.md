@@ -70,6 +70,33 @@ SDF yang sudah punya field `tenant_id` tidak diubah. Tabel yang sudah ada di dat
 
 Dengan `--drop`, semua tabel dibuat ulang sehingga diperlakukan sebagai tabel baru. Nama field mengikuti `TENANT_COLUMN` di config bila nilainya bukan `tenant_id`.
 
+## Relasi Melingkar
+
+Dua tabel atau lebih bisa saling merujuk. Contohnya, `warehouse` wajib punya lokasi stok default di `location`, sedangkan `location` boleh menunjuk gudang pemiliknya. Pada pasangan seperti ini tidak ada tabel yang bisa dibuat lebih dulu bila semua foreign key ditulis di dalam `CREATE TABLE`.
+
+`schema migrate` memutus lingkaran dengan menunda satu foreign key yang boleh kosong. Tabel di dalam lingkaran dibuat tanpa foreign key tersebut, lalu foreign key ditambahkan dengan `ALTER TABLE` setelah semua tabel ada. Nama constraint sama dengan foreign key biasa, sehingga `schema validate --config` dan `schema diff` tidak melihat perbedaan.
+
+```sql
+-- ADD FOREIGN KEY section (circular relations)
+ALTER TABLE location ADD CONSTRAINT fk_location_warehouse FOREIGN KEY (warehouse_id) REFERENCES warehouse (warehouse_id) ON DELETE RESTRICT;
+```
+
+Foreign key yang ditunda dipilih dari relasi `belongsTo` yang kolomnya tidak `notnull`, dan pilihannya selalu sama untuk SDF yang sama. Data pada pasangan di atas diisi berurutan: lokasi dibuat dengan `warehouse_id` kosong, gudang dibuat dengan lokasi tersebut, lalu `warehouse_id` pada lokasi diisi.
+
+Perilaku per dialect berbeda pada beberapa hal berikut.
+
+- SQLite tidak mendukung `ALTER TABLE ADD CONSTRAINT`, tetapi menerima foreign key ke tabel yang dibuat belakangan. Pada SQLite, foreign key tetap ditulis di dalam `CREATE TABLE` dan hanya urutan tabelnya yang menyesuaikan.
+- Tanpa `--drop`, `ALTER TABLE` dilewati bila constraint sudah ada, sehingga migrate bisa dijalankan ulang pada database yang sama.
+- Dengan `--drop`, MySQL mematikan `FOREIGN_KEY_CHECKS` selama tabel dihapus, sedangkan SQLite menunda pengecekan foreign key sampai migrate selesai. PostgreSQL dan Oracle sudah menghapus constraint terkait saat tabel dihapus.
+
+Lingkaran yang semua foreign key-nya `notnull` tetap ditolak, karena tidak ada baris yang bisa diisi lebih dulu. Pesan error menyebut tabel dan relasi di dalam lingkaran.
+
+```
+Error: DDL generation failed: Circular dependency detected among tables: location, warehouse. The cycle cannot be broken because these foreign keys are NOT NULL: location.warehouse -> warehouse, warehouse.default_stock_location -> location. Make at least one foreign key in the cycle nullable.
+```
+
+Perilaku yang sama berlaku untuk `schema generate-ddl`. [`schema validate`](./validate.md) menandai lingkaran yang bisa diputus dengan warning `circular-relation-nullable`.
+
 ## Contoh
 
 ```bat

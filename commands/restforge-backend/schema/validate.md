@@ -35,6 +35,14 @@ Contoh output mode hanya file:
 2 models loaded, 0 errors.
 ```
 
+Tabel yang saling merujuk dengan setidaknya satu foreign key yang boleh kosong ditandai warning `circular-relation-nullable`. Warning ini tidak mengubah exit code dan menyebut foreign key yang dibuat [`schema migrate`](./migrate.md#relasi-melingkar) lewat `ALTER TABLE`. Warning tampil di kedua mode, dan ikut dihitung di `warningCount` pada output JSON.
+
+```
+⚠ Circular dependency: location → warehouse → location (at least one nullable edge — insertable but consider whether the cycle is intentional). schema migrate adds foreign key location.warehouse with ALTER TABLE after the tables are created (inline on SQLite).
+
+2 models loaded, 0 errors, 1 warning.
+```
+
 Contoh output mode file dan database:
 
 ```

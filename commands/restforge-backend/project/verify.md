@@ -89,6 +89,7 @@ Setiap pengecualian tercantum di output dan di lock file agar bisa diaudit. Proc
 | VAL002 | Setiap RDF merujuk tabel dan kolom yang ada di SDF. Kolom JOIN dianggap sah bila dipilih salah satu query RDF | Error |
 | VAL003 | UDF utama di `frontend/payload/` lolos validasi `restforge-designer` | Error |
 | VAL004 | Dengan `--config`, SDF dan RDF sesuai dengan struktur tabel di database | Error |
+| VAL005 | Tabel SDF yang saling merujuk dengan setidaknya satu foreign key nullable, sama dengan warning `circular-relation-nullable` di [`schema validate`](../schema/validate.md) | Warning |
 
 ### Perubahan sejak Verifikasi Terakhir
 

@@ -66,6 +66,8 @@ Selain laporan teks, `schema validate` mengeluarkan output JSON lewat flag `--js
 | `circular-mandatory-relation` | error | Cycle dengan semua edge mandatory (insert impossible), atau self-reference dengan FK `notnull` |
 | `circular-relation-nullable` | warning | Multi-table cycle dengan setidaknya satu nullable edge |
 
+Lingkaran dengan foreign key nullable tetap bisa dibuat. [`schema migrate`](../../commands/restforge-backend/schema/migrate.md#relasi-melingkar) menunda salah satu foreign key nullable ke `ALTER TABLE` setelah semua tabel dibuat, dan pesan warning menyebut foreign key tersebut. Relasi paralel ke tabel yang sama dilaporkan sekali, dan warning tidak muncul bila tabel yang sama sudah punya lingkaran `circular-mandatory-relation`.
+
 Self-reference nullable (misal `employee.manager_id` nullable) tidak ditandai karena pola tree/hierarchy umum dan dapat di-insert dengan FK NULL pada root row.
 
 ### Check Constraint Compatibility
