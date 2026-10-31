@@ -50,9 +50,12 @@ Nilai default saat insert. Format value:
 |------------|-------------------|-------|
 | Boolean | `default:true` atau `default:false` | Boolean literal |
 | Integer | `default:0`, `default:100` | Integer literal |
+| Decimal | `default:0.01`, `default:-1.5` | Numeric literal |
 | String | `default:'INDONESIA'` | String literal (gunakan single quote) |
 | Function | `default:now()` | Pemanggilan function (di-translate ke native function per dialect) |
 | Constant | `default:current_date` | SQL constant |
+
+Angka pecahan ditulis tanpa kutip dan wajib punya digit di kedua sisi titik, sehingga `.5` dan `1.` ditolak. Default pecahan hanya berlaku untuk kolom `decimal`, sedangkan `integer default:1.5` atau `bigint default:1.5` ditolak saat schema dimuat.
 
 ### Translasi `default:now()` per Dialect
 
