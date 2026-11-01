@@ -111,7 +111,7 @@ Bila file RDF target sudah ada, `payload generate` menggabungkan hasil introspek
 Nilai berikut selalu diambil ulang dari database dan SDF:
 
 - Kolom fisik tabel di `fieldName`, beserta `dateTimeFields` dan `uniqueConstraints`. Kolom yang sengaja dihapus dari `fieldName` tidak ditambahkan kembali (lihat [Kolom yang Dihapus dari `fieldName`](#kolom-yang-dihapus-dari-fieldname)).
-- Constraint `fieldValidation` yang berasal dari struktur tabel, yaitu `primaryKey`, `autoGenerate`, `unique`, `default`, `scale`, `precision`, `enum`, `maxLength`, dan `required` dari kolom NOT NULL.
+- Constraint `fieldValidation` yang berasal dari struktur tabel, yaitu `primaryKey`, `autoGenerate`, `unique`, `foreignKey`, `default`, `scale`, `precision`, `enum`, `maxLength`, dan `required` dari kolom NOT NULL.
 - Blok `softDelete` beserta metadata FK-nya, dan `deleteReferences`.
 - Action standar yang belum ditetapkan di file lama. Tujuh action standar adalah `datatables`, `create`, `update`, `delete`, `first`, `lookup`, dan `read`.
 

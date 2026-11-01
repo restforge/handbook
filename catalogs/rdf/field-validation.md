@@ -98,7 +98,7 @@ Dua sifat penting `text` saat diturunkan dari database:
 
 | Tipe | Constraint Spesifik |
 |------|---------------------|
-| `string`, `text` | `minLength`, `maxLength`, `pattern`, `patternMessage`, `format` (`email`/`phone`/`url`/`uuid`), `enum`, `notEqual`, `trim`, `lowercase`, `uppercase`, `abbreviation` (khusus `string`, lihat [Kode Singkatan](#kode-singkatan-abbreviation)). `text` divalidasi identik dengan `string`; bedanya generator tidak menurunkan `maxLength` otomatis untuk `text` (unbounded). |
+| `string`, `text` | `minLength`, `maxLength`, `pattern`, `patternMessage`, `format` (`email`/`phone`/`url`/`uuid`), `enum`, `notEqual`, `trim`, `lowercase`, `uppercase`, `abbreviation` (khusus `string`, lihat [Kode Singkatan](#kode-singkatan-abbreviation)), `foreignKey` (khusus `string`, lihat [Nilai Kosong dan `nullable`](#nilai-kosong-dan-nullable)). `text` divalidasi identik dengan `string`; bedanya generator tidak menurunkan `maxLength` otomatis untuk `text` (unbounded). |
 | `integer`, `decimal`, `number` | `min`, `max`, `precision`, `scale`, `positive`, `negative`, `integer`, `notEqual`, `format` (`currency`) |
 | `date`, `datetime`, `timestamp`, `timestamptz` | `min`, `max`, `before`, `after`. `format` ditolak `payload validate` karena pola tanggal selalu diambil dari `DATEFORMAT`/`DATETIMEFORMAT` (lihat [`datetime-fields.md`](./datetime-fields.md#satu-standar-per-aplikasi)) |
 | `boolean` | `default`, `strict` |
@@ -291,6 +291,12 @@ Field opsional yang dikosongkan boleh dikirim sebagai `null`, sebagai string kos
 Konversi `""` menjadi NULL membuat form yang mengosongkan input tanggal atau angka tetap tersimpan, karena database menolak `""` pada kolom bertipe tanggal, angka, dan boolean. Oracle menyimpan `""` pada kolom string sebagai NULL karena sifat VARCHAR2.
 
 Pengecualian berlaku untuk field `string` atau `text` yang tidak `required` dan bertanda `"unique": true`. Pada field ini `""` disimpan NULL, karena index unique menganggap `""` sebagai satu nilai yang sama sehingga record kedua yang mengosongkan field itu ditolak sebagai duplikat, sedangkan NULL boleh berulang. Form hasil generate juga mengirim `null` untuk input teks kosong pada field tersebut.
+
+Aturan yang sama berlaku untuk kolom foreign key bertipe `string` yang tidak `required`. Nilai `""` tidak pernah cocok dengan data induk, sehingga tanpa konversi ini request ditolak dengan HTTP 400 `FOREIGN_KEY_VIOLATION`. `payload generate` dan `payload sync` menandai kolom tersebut dengan `"foreignKey": true` berdasarkan foreign key di database, yang dibuat dari relasi `belongsTo` SDF. Constraint ini tidak ditulis manual, dan RDF lama mendapatkannya setelah `payload sync` dijalankan. Form hasil generate juga mengirim `null` saat select FK opsional dibiarkan kosong.
+
+```json
+{ "name": "group_id", "type": "string", "constraints": { "maxLength": 36, "foreignKey": true } }
+```
 
 Nilai `""` yang sudah tersimpan sebelum perubahan ini tidak ikut berubah dan perlu dibersihkan dengan `UPDATE <tabel> SET <kolom> = NULL WHERE <kolom> = '';`.
 
