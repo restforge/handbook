@@ -290,6 +290,10 @@ Field opsional yang dikosongkan boleh dikirim sebagai `null`, sebagai string kos
 
 Konversi `""` menjadi NULL membuat form yang mengosongkan input tanggal atau angka tetap tersimpan, karena database menolak `""` pada kolom bertipe tanggal, angka, dan boolean. Oracle menyimpan `""` pada kolom string sebagai NULL karena sifat VARCHAR2.
 
+Pengecualian berlaku untuk field `string` atau `text` yang tidak `required` dan bertanda `"unique": true`. Pada field ini `""` disimpan NULL, karena index unique menganggap `""` sebagai satu nilai yang sama sehingga record kedua yang mengosongkan field itu ditolak sebagai duplikat, sedangkan NULL boleh berulang. Form hasil generate juga mengirim `null` untuk input teks kosong pada field tersebut.
+
+Nilai `""` yang sudah tersimpan sebelum perubahan ini tidak ikut berubah dan perlu dibersihkan dengan `UPDATE <tabel> SET <kolom> = NULL WHERE <kolom> = '';`.
+
 Constraint `nullable` mengatur boleh tidaknya field opsional bernilai NULL. Tanpa `nullable`, atau dengan `"nullable": true`, nilai kosong disimpan seperti tabel di atas. Dengan `"nullable": false`, request yang mengirim `null`, atau `""` pada tipe selain `string` dan `text`, ditolak dengan HTTP 400 `VALIDATION_FAILED`.
 
 ```json
