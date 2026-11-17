@@ -110,6 +110,13 @@ Scope `form` mendukung workflow generate per-page tanpa harus regenerate seluruh
 | Field di `fields[]` tidak direferensikan (kecuali `editorMode: hidden`) | Warning | `The following fields are defined in 'fields' but are not referenced in 'fieldRows' and will not be rendered in the form: <names>. Add them to 'fieldRows' to make them visible, or set editorMode:'hidden' if they are intentionally excluded from the form.` |
 | `fieldRows` referensi field yang tidak ada | Warning | `fieldRows references fields that are not defined in 'fields': <names>` |
 
+### Page CRUD: `features.inputSize`
+
+| Aturan | Tingkat | Pesan |
+|--------|---------|-------|
+| Nilai salah satu dari `sm`, `default`, `lg` | Error | `[<pageId>] features.inputSize "<value>" is not recognized. Valid values are: sm, default, lg` |
+| Hanya diterapkan plugin `vanilla-js-auth` | Warning | `[<pageId>] features.inputSize is not supported by plugin '<plugin>' and will be ignored` |
+
 ### Page CRUD: `details[]`
 
 | Aturan | Tingkat | Pesan |
