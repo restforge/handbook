@@ -13,7 +13,8 @@
     "dataFilters": [ /* ... */ ],
     "enableLiveSync": false,
     "autoRefresh": { "interval": 30 },
-    "fieldLayout": "vertical"
+    "fieldLayout": "vertical",
+    "inputSize": "default"
 }
 ```
 
@@ -29,6 +30,7 @@
 | `enableLiveSync` | boolean | `false` | Mengaktifkan WebSocket live sync (memerlukan blok `liveSync` di level root) |
 | `autoRefresh` | object | — | Polling reload otomatis tiap `interval` detik (`{ "interval": <detik> }`); tidak dapat digabung dengan `enableLiveSync` pada page yang sama; tidak didukung plugin `vanilla-js-basic` |
 | `fieldLayout` | string | `"vertical"` | Orientasi label: `"vertical"` atau `"horizontal"` |
+| `inputSize` | string | `"default"` | Ukuran input dan textarea di form: `"sm"`, `"default"`, atau `"lg"`; hanya diterapkan plugin `vanilla-js-auth` |
 
 ## `enableSearch`
 
@@ -613,6 +615,36 @@ Email        [___________________]
 ### Interaksi dengan `fieldRows`
 
 Jika `fieldLayout: "horizontal"`, blok `fieldRows` diabaikan (validator menghasilkan warning). Layout horizontal selalu single-column.
+
+Ukuran input tidak bergantung pada pilihan layout. Layout vertical dan horizontal menghasilkan input yang sama untuk field yang sama, dan ukurannya diatur lewat [`inputSize`](#inputsize).
+
+## `inputSize`
+
+Ukuran input dan textarea di form tambah dan ubah. Nilainya berlaku untuk semua field di page tersebut, termasuk field detail `one`, pada layout vertical maupun horizontal.
+
+```json
+"features": {
+    "fieldLayout": "horizontal",
+    "inputSize": "lg"
+}
+```
+
+| Nilai | Class input |
+|-------|-------------|
+| `"default"` (default) | `form-control` |
+| `"sm"` | `form-control form-control-sm` |
+| `"lg"` | `form-control form-control-lg` |
+
+Properti ini hanya diterapkan plugin `vanilla-js-auth`. Plugin lain mengabaikannya, dan validator menghasilkan warning. Nilai di luar ketiga nilai di atas ditolak validator dengan pesan berikut.
+
+```
+[<pageId>] features.inputSize "<value>" is not recognized. Valid values are: sm, default, lg
+[<pageId>] features.inputSize is not supported by plugin '<plugin>' and will be ignored
+```
+
+Baris pertama adalah error yang menggagalkan validasi. Baris kedua adalah warning: payload tetap valid, tetapi `inputSize` tidak berpengaruh pada hasil generate.
+
+Halaman login, register, dan halaman password tidak terpengaruh `inputSize` karena halaman itu bukan form data.
 
 ## Kombinasi Fitur
 
