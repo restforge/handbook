@@ -113,7 +113,7 @@ Baris dengan `is_lock: true` menampilkan `Edit` dan `Delete` dalam keadaan mati,
 | Aspek | Perilaku |
 |-------|----------|
 | `Edit` dan `Delete` | Mati dengan `disabled` dan `aria-disabled="true"` pada baris terkunci |
-| Aksi di `lockedActions` | Mati pada dialog Change Status. Aksi lain di dialog yang sama tetap aktif |
+| Aksi di `lockedActions` | Mati pada dialog Change Status. Pada [`workflowMenu: "items"`](./features.md#workflowmenu), item aksi itu tetap tampil di menu Actions dalam keadaan mati dengan tooltip yang sama. Aksi lain tetap aktif |
 | Aksi tanpa transisi | Tetap tidak tampil, seperti tanpa kunci dokumen |
 | Gabungan dengan `fieldStates` | Item mati bila salah satu aturan terpenuhi. Bila keduanya berlaku, tooltip kunci dokumen didahulukan |
 

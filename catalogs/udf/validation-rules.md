@@ -117,6 +117,12 @@ Scope `form` mendukung workflow generate per-page tanpa harus regenerate seluruh
 | Nilai salah satu dari `sm`, `default`, `lg` | Error | `[<pageId>] features.inputSize "<value>" is not recognized. Valid values are: sm, default, lg` |
 | Hanya diterapkan plugin `vanilla-js-auth` | Warning | `[<pageId>] features.inputSize is not supported by plugin '<plugin>' and will be ignored` |
 
+### Page CRUD: `features.workflowMenu`
+
+| Aturan | Tingkat | Pesan |
+|--------|---------|-------|
+| Nilai salah satu dari `modal`, `items` | Error | `[<pageId>] features.workflowMenu "<value>" is not recognized. Valid values are: modal, items` |
+
 ### Page CRUD: `details[]`
 
 | Aturan | Tingkat | Pesan |

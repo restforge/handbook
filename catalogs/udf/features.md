@@ -14,7 +14,8 @@
     "enableLiveSync": false,
     "autoRefresh": { "interval": 30 },
     "fieldLayout": "vertical",
-    "inputSize": "default"
+    "inputSize": "default",
+    "workflowMenu": "modal"
 }
 ```
 
@@ -31,6 +32,7 @@
 | `autoRefresh` | object | — | Polling reload otomatis tiap `interval` detik (`{ "interval": <detik> }`); tidak dapat digabung dengan `enableLiveSync` pada page yang sama; tidak didukung plugin `vanilla-js-basic` |
 | `fieldLayout` | string | `"vertical"` | Orientasi label: `"vertical"` atau `"horizontal"` |
 | `inputSize` | string | `"default"` | Ukuran input dan textarea di form: `"sm"`, `"default"`, atau `"lg"`; hanya diterapkan plugin `vanilla-js-auth` |
+| `workflowMenu` | string | `"modal"` | Bentuk aksi workflow di menu Actions: `"modal"` (satu item Change Status yang membuka dialog) atau `"items"` (satu item per aksi yang tersedia); hanya berpengaruh bila page punya `workflowActions` |
 
 ## `enableSearch`
 
@@ -645,6 +647,36 @@ Properti ini hanya diterapkan plugin `vanilla-js-auth`. Plugin lain mengabaikann
 Baris pertama adalah error yang menggagalkan validasi. Baris kedua adalah warning: payload tetap valid, tetapi `inputSize` tidak berpengaruh pada hasil generate.
 
 Halaman login, register, dan halaman password tidak terpengaruh `inputSize` karena halaman itu bukan form data.
+
+## `workflowMenu`
+
+Bentuk aksi workflow di menu Actions setiap baris tabel. Properti ini hanya berpengaruh pada page yang punya [`workflowActions`](workflow-actions.md).
+
+```json
+"features": {
+    "workflowMenu": "items"
+}
+```
+
+| Nilai | Isi menu Actions |
+|-------|------------------|
+| `"modal"` (default) | Satu item **Change Status**. Item ini membuka dialog yang berisi status saat ini dan satu tombol untuk setiap status tujuan yang diizinkan |
+| `"items"` | Satu item untuk setiap status tujuan yang diizinkan dari status baris, berlabel `workflowActions[].label`, misalnya **Confirm Order** dan **Cancel Order** |
+
+Nilai `"items"` cocok untuk aplikasi yang memakai label kata kerja langsung di menu dan tidak memakai label umum seperti Change Status. Pengguna cukup melewati satu dialog untuk satu aksi.
+
+- Item tampil di posisi yang sama dengan item Change Status, yaitu setelah Edit dan sebelum Delete.
+- Aksi dengan `style: "danger"` tampil berwarna merah, sama seperti item Delete.
+- Baris yang statusnya tidak punya transisi tidak menampilkan item workflow.
+- Klik item langsung membuka dialog konfirmasi dari `confirm`. Aksi tanpa `confirm` langsung dijalankan.
+- Pada plugin `vanilla-js-auth`, item hanya tampil bagi user yang punya izin mengubah status, sama seperti item Change Status.
+- Pada baris yang terkunci oleh [kunci dokumen](document-lock.md), aksi di `lockedActions` tetap tampil dalam keadaan nonaktif dengan ikon informasi yang menjelaskan alasannya.
+
+Nilai selain `"modal"` dan `"items"` ditolak validator dengan pesan berikut.
+
+```
+[<pageId>] features.workflowMenu "<value>" is not recognized. Valid values are: modal, items
+```
 
 ## Kombinasi Fitur
 

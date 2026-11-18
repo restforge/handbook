@@ -1,6 +1,6 @@
 # Workflow Actions — `workflow` + `workflowActions[]`
 
-> Tombol transisi status record (state machine sederhana) yang muncul di dialog **Change Status**, terpisah dari tombol simpan dan hapus bawaan form.
+> Tombol transisi status record (state machine sederhana) yang muncul di dialog **Change Status** atau langsung di menu **Actions**, terpisah dari tombol simpan dan hapus bawaan form.
 
 ## Konsep
 
@@ -10,6 +10,8 @@ Record yang punya lifecycle status (Pending → Paid → Shipped → Completed) 
 - `workflowActions[]` mendefinisikan satu tombol per status tujuan: label, gaya, dialog konfirmasi, endpoint yang dipanggil, dan cara menampilkan hasilnya.
 
 Pada aplikasi hasil generate, menu **Actions** di setiap baris tabel memuat item **Change Status**. Item ini membuka dialog yang menampilkan nama record (`displayField`) dan status saat ini, lalu merender tombol untuk setiap status tujuan yang diizinkan dari status tersebut.
+
+Page dengan [`features.workflowMenu: "items"`](./features.md#workflowmenu) tidak memakai dialog itu. Menu **Actions** langsung memuat satu item untuk setiap status tujuan yang diizinkan, berlabel `label` aksinya, misalnya **Paid** dan **Cancelled** pada baris berstatus `pending`.
 
 ```json
 {
@@ -60,7 +62,7 @@ Dengan konfigurasi di atas, record berstatus `pending` menampilkan tombol **Paid
 | Properti | Tipe | Wajib | Keterangan |
 |----------|------|:-----:|-----------|
 | `statusField` | string | ✓ jika `workflowActions[]` ada | Nama field penyimpan status. Nilainya dibaca dari data baris tabel untuk menentukan tombol yang tampil, jadi kolom ini harus ikut dikembalikan endpoint `/datatables` |
-| `transitions` | object | ✗ | Peta `status saat ini` → daftar `status tujuan`. Tombol hanya dirender untuk status tujuan yang ada di daftar ini **dan** punya aksi dengan `actionId` yang sama. Tanpa `transitions`, dialog selalu menampilkan `No transitions available for this status.` |
+| `transitions` | object | ✗ | Peta `status saat ini` → daftar `status tujuan`. Tombol hanya dirender untuk status tujuan yang ada di daftar ini **dan** punya aksi dengan `actionId` yang sama. Tanpa `transitions`, dialog selalu menampilkan `No transitions available for this status.`, dan pada `workflowMenu: "items"` menu Actions tidak memuat item workflow |
 
 `transitions` di UDF hanya mengatur tombol yang tampil. Validasi transisi yang sesungguhnya tetap dilakukan backend lewat `workflow.transitions` di RDF (lihat [`../rdf/workflow.md`](../rdf/workflow.md)), dan penolakannya dibalas HTTP 422. Isi kedua peta ini harus sama agar tombol yang tampil selalu diterima backend.
 
@@ -99,6 +101,8 @@ Jika `workflowActions[]` didefinisikan tetapi `workflow.statusField` tidak ada, 
 1. Pengguna membuka menu **Actions** pada baris tabel dan memilih **Change Status**.
 2. Dialog **Change Status** menampilkan `displayField` record, status saat ini, dan tombol untuk setiap status tujuan pada `workflow.transitions[<status saat ini>]` yang punya aksi ber-`actionId` sama.
 3. Bila aksi punya `confirm`, dialog konfirmasi tampil di atas dialog Change Status; membatalkannya mengembalikan pengguna ke dialog Change Status. Setelah dikonfirmasi, atau langsung bila tanpa `confirm`, dialog Change Status ditutup.
+
+   Pada `workflowMenu: "items"`, ketiga langkah di atas lebih pendek. Pengguna memilih item aksi langsung dari menu **Actions**, lalu dialog konfirmasi dari `confirm` tampil. Aksi tanpa `confirm` langsung dijalankan.
 4. Aplikasi mengirim `POST <apiBaseUrl>/<api.endpoint>` dengan body `api.payload` yang sudah disubstitusi. Header auth ikut dikirim bila plugin memakai auth.
 5. Response `success: true`: tabel dimuat ulang tanpa mengubah halaman aktif, lalu notifikasi `onSuccess.notification` tampil.
 6. Response `success: false` atau status HTTP error (400, 422, 502, dan lainnya): `message` dari response ditampilkan sesuai `onError.display`. Bila response tidak punya `message`, teks `Action failed.` yang dipakai.
@@ -280,7 +284,7 @@ Lihat [`field-states.md`](./field-states.md) untuk detail. Aksi yang menuju stat
 
 | Aspek | Tombol Standar | Workflow Actions |
 |-------|----------------|------------------|
-| Tombol yang dihasilkan | Tombol penyimpan (`{addVerb} {pageSubject}` di mode tambah, `Save Changes` di mode ubah), Cancel, Delete | Item **Change Status** di menu Actions, lalu satu tombol per status tujuan yang diizinkan |
+| Tombol yang dihasilkan | Tombol penyimpan (`{addVerb} {pageSubject}` di mode tambah, `Save Changes` di mode ubah), Cancel, Delete | Item **Change Status** di menu Actions, lalu satu tombol per status tujuan yang diizinkan. Pada `workflowMenu: "items"`, satu item per status tujuan langsung di menu Actions |
 | Endpoint | `POST /<apiPath>`, `PUT /<apiPath>/<id>`, `DELETE /<apiPath>/<id>` | `POST /<api.endpoint>` dengan body `api.payload` (default `/<apiPath>/change-status`) |
 | Konfirmasi | Default: konfirmasi delete | Opsional per aksi via `confirm` |
 | Tampilan error | Ringkasan error di form, modal untuk delete | `onError.display`: modal (default) atau toast menetap |
